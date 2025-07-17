@@ -64,41 +64,46 @@ def _(info, info_kind, mo):
 
 
 @app.cell
-def _(mo, race_path):
+def _(race_path):
     import configparser
     check_param= False
+    race_info_kind = 'success'
     if race_path:
         if race_path.joinpath('input.par').exists():
             check_param= True
-    mo.stop(not check_param, mo.md("**Can't open input.par.**"))
-
-    params = configparser.ConfigParser(inline_comment_prefixes=('#',))
-    params.read(race_path.joinpath('input.par'))
-    def print_params(params):
-        for section in params.sections():
-            print(f"[{section}]")
-
-    return (params,)
+            params = configparser.ConfigParser(inline_comment_prefixes=('#',))
+            params.read(race_path.joinpath('input.par'))
+            inp_text = f"{race_path.name} - Name: {params['common']['name']}"
+        else:
+            inp_text = "**Can't open input.par.**"
 
 
-@app.cell
-def _(mo, params, race_path):
-    input_info = mo.md(f"{race_path.name} - Name: {params['common']['name']}") 
-    return (input_info,)
+    return configparser, inp_text, params, race_info_kind
 
 
 @app.cell
-def _(race_path):
-    if race_path:
-        if race_path.joinpath('system_info.ini').exists():
-            pass
-        
+def _():
     return
 
 
 @app.cell
-def _(info_kind, input_info, mo):
-    mo.callout(input_info, kind=info_kind)
+def _(configparser, race_path):
+    if race_path:
+        if race_path.joinpath('system_info.ini').exists():
+            sys_info = configparser.ConfigParser(inline_comment_prefixes=('#',))
+            sys_info.read(race_path.joinpath('system_info.ini'))
+            si = sys_info['system_info']
+            sys_text = f"Host: {si['host']}<br>OS: {si['system']}<br>CPU: {si['processor']}"
+        else:
+            sys_text = "**Can't system_info.ini.**"        
+
+    return (sys_text,)
+
+
+@app.cell
+def _(inp_text, mo, race_info_kind, sys_text):
+    input_info = mo.md(inp_text + '<br>' + sys_text) 
+    mo.callout(input_info, kind=race_info_kind)
     return
 
 
