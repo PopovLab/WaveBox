@@ -71,12 +71,12 @@ def _():
 def _(mo, race_path):
     check_param= False
     if race_path:
-        if race_path.joinpath('calc_params.ini').exists():
+        if race_path.joinpath('input.par').exists():
             check_param= True
-    mo.stop(not check_param, mo.md("**Can't open calc_params.ini.**"))
+    mo.stop(not check_param, mo.md("**Can't open input.par.**"))
     import configparser
     params = configparser.ConfigParser(inline_comment_prefixes=('#',))
-    params.read(race_path.joinpath('calc_params.ini'))
+    params.read(race_path.joinpath('input.par'))
     def print_params(params):
         for section in params.sections():
             print(f"[{section}]")
