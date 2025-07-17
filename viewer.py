@@ -31,6 +31,13 @@ def _(folder_browser, mo, race_browser):
     return
 
 
+@app.function
+def get_done_tasks(path):
+    with path.joinpath('done_tasks.txt').open("r") as file:
+            done_tasks = [line.strip() for line in file.readlines()]
+    return done_tasks
+
+
 @app.cell
 def _(cfg, mo, race_browser):
     race_path = race_browser.path(index=0)
@@ -39,8 +46,7 @@ def _(cfg, mo, race_browser):
             #info = mo.md(f"done_tasks exists")
             cfg.set_initial_path(race_path.parent.parent.as_posix())
             info_kind = 'success'
-            with race_path.joinpath('done_tasks.txt').open("r") as file:
-                done_tasks = [line.strip() for line in file.readlines()]
+            done_tasks = get_done_tasks(race_path)
             info = mo.md(f"{race_path.name}\n\n {done_tasks}")        
         else:
             info = mo.md(f"done_tasks not exists!")
