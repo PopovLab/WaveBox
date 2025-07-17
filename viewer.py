@@ -1,25 +1,19 @@
 import marimo
 
-__generated_with = "0.14.9"
+__generated_with = "0.14.11"
 app = marimo.App(width="medium")
 
 
 @app.cell
 def _():
     import config as cfg
-    ip = cfg.get_initial_path()
-    return (ip,)
-
-
-@app.cell
-def _(ip):
     import marimo as mo
-    folder_browser = mo.ui.file_browser(initial_path=ip, 
+    folder_browser = mo.ui.file_browser(initial_path=cfg.get_initial_path(), 
                                         selection_mode='directory',
                                         label='Base folder',
                                         multiple= False)
 
-    return folder_browser, mo
+    return cfg, folder_browser, mo
 
 
 @app.cell
@@ -38,11 +32,12 @@ def _(folder_browser, mo, race_browser):
 
 
 @app.cell
-def _(mo, race_browser):
+def _(cfg, mo, race_browser):
     race_path = race_browser.path(index=0)
     if race_path:
         if race_path.joinpath('done_tasks.txt').exists():
             #info = mo.md(f"done_tasks exists")
+            cfg.set_initial_path(race_path.parent.parent.as_posix())
             info_kind = 'success'
             with race_path.joinpath('done_tasks.txt').open("r") as file:
                 done_tasks = [line.strip() for line in file.readlines()]
@@ -175,7 +170,7 @@ def _(ax, ax_pabs, mo, params, table):
         "Pabs": mo.as_html(ax_pabs),
         "Pabs(psi)": mo.as_html(ax),
         'Params':mo.tree(params.sections())
-    
+
     })
     return
 
