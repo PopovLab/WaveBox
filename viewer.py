@@ -64,18 +64,14 @@ def _(info, info_kind, mo):
 
 
 @app.cell
-def _():
-    return
-
-
-@app.cell
 def _(mo, race_path):
+    import configparser
     check_param= False
     if race_path:
         if race_path.joinpath('input.par').exists():
             check_param= True
     mo.stop(not check_param, mo.md("**Can't open input.par.**"))
-    import configparser
+
     params = configparser.ConfigParser(inline_comment_prefixes=('#',))
     params.read(race_path.joinpath('input.par'))
     def print_params(params):
@@ -83,6 +79,27 @@ def _(mo, race_path):
             print(f"[{section}]")
 
     return (params,)
+
+
+@app.cell
+def _(mo, params, race_path):
+    input_info = mo.md(f"{race_path.name} - Name: {params['common']['name']}") 
+    return (input_info,)
+
+
+@app.cell
+def _(race_path):
+    if race_path:
+        if race_path.joinpath('system_info.ini').exists():
+            pass
+        
+    return
+
+
+@app.cell
+def _(info_kind, input_info, mo):
+    mo.callout(input_info, kind=info_kind)
+    return
 
 
 @app.function
