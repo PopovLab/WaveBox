@@ -48,18 +48,19 @@ def _(cfg, mo, race_browser):
             info_kind = 'success'
             done_tasks = get_done_tasks(race_path)
             info = mo.md(f"{race_path.name}\n\n {done_tasks}")        
+            info_text = f"{race_path.name}<br> {done_tasks}"
         else:
             info = mo.md(f"done_tasks not exists!")
             info_kind = 'danger'
     else:
         info = mo.md(f"Upps2")
         info_kind = 'danger'        
-    return done_tasks, info, info_kind, race_path
+    return done_tasks, info_kind, info_text, race_path
 
 
 @app.cell
-def _(info, info_kind, mo):
-    mo.callout(info, kind=info_kind)
+def _():
+    #mo.callout(info, kind=info_kind)
     return
 
 
@@ -101,8 +102,8 @@ def _(configparser, race_path):
 
 
 @app.cell
-def _(inp_text, mo, race_info_kind, sys_text):
-    input_info = mo.md(inp_text + '<br>' + sys_text) 
+def _(info_text, inp_text, mo, race_info_kind, sys_text):
+    input_info = mo.md(info_text + '<br>'+ inp_text + '<br>' + sys_text) 
     mo.callout(input_info, kind=race_info_kind)
     return
 
