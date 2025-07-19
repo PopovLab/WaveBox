@@ -21,7 +21,6 @@ def _(mo):
 @app.cell
 def _():
     import config as cfg
-    cfg.get_initial_path()
     return (cfg,)
 
 
@@ -30,6 +29,7 @@ def _(cfg, mo):
     folder_browser = mo.ui.file_browser(initial_path=cfg.get_initial_path(), 
                                         selection_mode='directory',
                                         label='Base folder',
+                                        restrict_navigation= True,
                                         multiple= False)
 
     return (folder_browser,)
@@ -40,6 +40,7 @@ def _(folder_browser, mo):
     race_browser = mo.ui.file_browser(initial_path=folder_browser.path(index=0),
                                       selection_mode='directory',
                                       label='Race folder',
+                                      restrict_navigation= True,
                                       multiple= False)
     return (race_browser,)
 
