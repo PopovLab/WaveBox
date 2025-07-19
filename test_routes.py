@@ -1,7 +1,7 @@
 import marimo
 
 __generated_with = "0.14.11"
-app = marimo.App()
+app = marimo.App(width="medium")
 
 
 @app.cell
@@ -85,7 +85,28 @@ def _(mo):
 @app.cell
 def _(mo):
     def render_settings():
+        folder, set_folder = mo.state(0)
         header = mo.md("# Settings")
+        def xyz(x):
+            set_folder('xzcvcx')
+        
+        form = mo.ui.file_browser(
+            initial_path="",#cfg.get_initial_path(), 
+            selection_mode='directory',
+            label='Select Base folder',
+            multiple= False
+            ).form(on_change=xyz)
+
+        return mo.vstack([header, 
+                          form,
+                          mo.md(f"Has value: ")])
+    return (render_settings,)
+
+
+@app.cell
+def _(mo):
+    def render_about():
+        header = mo.md("# About")
         test = mo.md(
         r'''
         The exponential function $f(x) = e^x$ can be represented as
@@ -96,16 +117,16 @@ def _(mo):
         '''
         )
         return mo.vstack([header, test ])
-    return (render_settings,)
+    return (render_about,)
 
 
 @app.cell
-def _(mo, render_home, render_power_absorbtion, render_settings):
+def _(mo, render_about, render_home, render_power_absorbtion, render_settings):
     mo.routes({ "#/": render_home,
                 "#/power_absorbtion": render_power_absorbtion,            
                 "#/settings": render_settings,
-                "#/about": mo.md("# About"), 
-                mo.routes.CATCH_ALL: mo.md("# Home"),
+                "#/about": render_about, 
+                mo.routes.CATCH_ALL: render_home,
               })
     return
 
