@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.14.11"
+__generated_with = "0.14.12"
 app = marimo.App(width="medium")
 
 
@@ -14,7 +14,7 @@ def _():
 
 @app.cell
 def _(mo):
-    mo.md("""# Power absorbtion""")
+    mo.md("""## Power absorbtion""")
     return
 
 
