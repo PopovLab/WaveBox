@@ -51,9 +51,11 @@ def _(cfg, mo, race_browser):
             info_text = f"{race_path.name}<br> {done_tasks}"
         else:
             info = mo.md(f"done_tasks not exists!")
+            info_text = "done_tasks not exists!"
             info_kind = 'danger'
     else:
         info = mo.md(f"Upps2")
+        info_text = 'danger'  
         info_kind = 'danger'        
     return done_tasks, info_kind, info_text, race_path
 
@@ -77,6 +79,8 @@ def _(race_path):
             inp_text = f"{race_path.name} - Name: {params['common']['name']}"
         else:
             inp_text = "**Can't open input.par.**"
+    else:
+            inp_text = "**Can't open input.par.**"
 
 
     return configparser, inp_text, params, race_info_kind
@@ -97,7 +101,8 @@ def _(configparser, race_path):
             sys_text = f"Host: {si['host']}<br>OS: {si['system']}<br>CPU: {si['processor']}"
         else:
             sys_text = "**Can't system_info.ini.**"        
-
+    else:
+        sys_text = "**Can't system_info.ini.**"  
     return (sys_text,)
 
 
