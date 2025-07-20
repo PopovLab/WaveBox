@@ -167,11 +167,6 @@ def _(info_kind, mo, tasks_data):
 
 
 @app.cell
-def _():
-    return
-
-
-@app.cell
 def _(df, info_kind, mo, params):
     mo.stop(info_kind == 'danger', mo.md("**Submit the form to continue.**"))
     from matplotlib import pyplot as plt
@@ -187,7 +182,44 @@ def _(df, info_kind, mo, params):
 
 
 @app.cell
-def _(done_tasks, info_kind, mo, params, pd, plt, race_path):
+def _(mo):
+    psi_min = mo.ui.number(start=0.0, stop=1.0, step =0.1, label="psi min")
+    psi_max = mo.ui.number(start=0.0, stop=1.0, step =0.1, value=1.0, label="psi max")
+    return psi_max, psi_min
+
+
+@app.cell
+def _(mo):
+    log_checkbox = mo.ui.checkbox(label="log scale")
+    return (log_checkbox,)
+
+
+@app.cell
+def _(log_checkbox, mo, psi_max, psi_min):
+    plot_options = mo.vstack([log_checkbox, psi_min, psi_max])
+    return (plot_options,)
+
+
+@app.cell
+def _(done_tasks, mo):
+    tasks = mo.ui.array([mo.ui.checkbox(label=task, value=True) for task in done_tasks], label="Task list")
+    return (tasks,)
+
+
+@app.cell
+def _(
+    done_tasks,
+    info_kind,
+    log_checkbox,
+    mo,
+    params,
+    pd,
+    plt,
+    psi_max,
+    psi_min,
+    race_path,
+    tasks,
+):
     mo.stop(info_kind == 'danger', mo.md("**Submit the form to continue.**"))
     if params['series']['var'] == 'Nr':
         title = params['common']['name'] + ' Mmax=' + params['w2grid']['Mmax']
@@ -195,22 +227,20 @@ def _(done_tasks, info_kind, mo, params, pd, plt, race_path):
         title = params['common']['name'] +' Nr=' + params['w2grid']['Nr'] 
     fig, ax = plt.subplots()
     fig.suptitle(title)
-    for task1 in done_tasks:
-        #pb = read_power_balance(race_path.joinpath(task))
-        pabs_psi = race_path.joinpath(task1).joinpath('pabs(psi).dat')
-        df1 = pd.read_table(pabs_psi, header=None, names=['psi','dV','Pabs', 'PabsLD','PabsTT','PabsMX'], sep='\\s+' )
-        #plt.plot( df['b'] , label='b')
-        #plt.legend()
-        #plt.show()
-        ax.plot(df1['psi'], df1['Pabs']/df1['dV'] , label=task1)
-
-        #print(df1.index)
+    for task1, tv in zip(done_tasks, tasks.value):
+        if tv:
+            #pb = read_power_balance(race_path.joinpath(task))
+            pabs_psi = race_path.joinpath(task1).joinpath('pabs(psi).dat')
+            df1 = pd.read_table(pabs_psi, header=None, names=['psi','dV','Pabs', 'PabsLD','PabsTT','PabsMX'], sep='\\s+' )
+            ax.plot(df1['psi'], df1['Pabs']/df1['dV'] , label=task1)
     ax.legend()
-    ax.set_xlim([0, 0.4])
+    ax.set_xlim([psi_min.value, psi_max.value])
     #ax.set_ylim([0, 0.000002])
-    ax.set_yscale('log')
+    if log_checkbox.value:
+        ax.set_yscale('log')
     ax.set_xlabel('psi')
     ax.set_ylabel('Pabs/dV');
+    ax.autoscale(enable=True, axis='y', tight= True)
     #plt.show()
 
 
@@ -218,13 +248,18 @@ def _(done_tasks, info_kind, mo, params, pd, plt, race_path):
 
 
 @app.cell
-def _(ax, ax_pabs, mo, params, table):
+def _(mo, tasks):
+    tasks_stack = mo.hstack([tasks, tasks.value], justify="space-between")
+    return
+
+
+@app.cell
+def _(ax, ax_pabs, mo, params, plot_options, table, tasks):
     mo.ui.tabs({
         "Pabs table": table,
         "Pabs": mo.as_html(ax_pabs),
-        "Pabs(psi)": mo.as_html(ax),
+        "Pabs(psi)": mo.hstack([mo.as_html(ax), tasks, plot_options]),
         'Params':mo.tree(params.sections())
-
     })
     return
 
