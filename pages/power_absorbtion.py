@@ -107,11 +107,6 @@ def _(race_path):
 
 
 @app.cell
-def _():
-    return
-
-
-@app.cell
 def _(configparser, race_path):
     if race_path:
         if race_path.joinpath('system_info.ini').exists():
