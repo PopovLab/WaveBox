@@ -59,72 +59,77 @@ def get_done_tasks(path):
 
 
 @app.cell
-def _(mo, race_browser):
+def _(mo):
+    get_hstate, set_hstate = mo.state('admonition')
+    return get_hstate, set_hstate
+
+
+@app.cell
+def _(race_browser, set_hstate):
     race_path = race_browser.path(index=0)
     if race_path:
         if race_path.joinpath('done_tasks.txt').exists():
-            #info = mo.md(f"done_tasks exists")
             #cfg.set_initial_path(race_path.parent.parent.as_posix())
-            info_kind = 'success'
             done_tasks = get_done_tasks(race_path)
-            info = mo.md(f"{race_path.name}\n\n {done_tasks}")        
-            info_text = f"{race_path.name}<br> {done_tasks}"
+            info_text = ", ".join(done_tasks)
+            set_hstate('admonition')
         else:
-            info = mo.md(f"done_tasks not exists!")
             info_text = "done_tasks not exists!"
-            info_kind = 'danger'
+            set_hstate('attention')
     else:
-        info = mo.md(f"Upps2")
         info_text = 'danger'  
-        info_kind = 'danger'        
-    return done_tasks, info_kind, info_text, race_path
+        set_hstate('attention')
+    return done_tasks, info_text, race_path
 
 
 @app.cell
-def _():
-    #mo.callout(info, kind=info_kind)
-    return
-
-
-@app.cell
-def _(race_path):
+def _(race_path, set_hstate):
     import configparser
     check_param= False
-    race_info_kind = 'success'
     if race_path:
         if race_path.joinpath('input.par').exists():
             check_param= True
             params = configparser.ConfigParser(inline_comment_prefixes=('#',))
             params.read(race_path.joinpath('input.par'))
-            inp_text = f"{race_path.name} - Name: {params['common']['name']}"
+            inp_text = f"Name: {params['common']['name']}"
         else:
             inp_text = "**Can't open input.par.**"
+            set_hstate('attention')
     else:
             inp_text = "**Can't open input.par.**"
+            set_hstate('attention')
 
 
-    return configparser, inp_text, params, race_info_kind
+    return configparser, inp_text, params
 
 
 @app.cell
-def _(configparser, race_path):
+def _(configparser, race_path, set_hstate):
     if race_path:
         if race_path.joinpath('system_info.ini').exists():
             sys_info = configparser.ConfigParser(inline_comment_prefixes=('#',))
             sys_info.read(race_path.joinpath('system_info.ini'))
             si = sys_info['system_info']
-            sys_text = f"Host: {si['host']}<br>OS: {si['system']}<br>CPU: {si['processor']}"
+            sys_text = f"Host: {si['host']} OS: {si['system']}<br>CPU: {si['processor']}"
         else:
-            sys_text = "**Can't system_info.ini.**"        
+            sys_text = "**Can't system_info.ini.**"    
+            set_hstate('attention')
     else:
-        sys_text = "**Can't system_info.ini.**"  
+        sys_text = "**Can't system_info.ini.**"
+        set_hstate('attention')
     return (sys_text,)
 
 
 @app.cell
-def _(info_text, inp_text, mo, race_info_kind, sys_text):
-    input_info = mo.md(info_text + '<br>'+ inp_text + '<br>' + sys_text) 
-    mo.callout(input_info, kind=race_info_kind)
+def _(get_hstate, info_text, inp_text, mo, race_browser, sys_text):
+    mo.md(
+        f"""
+    /// {get_hstate()} | Work: {race_browser.path(index=0).name} {inp_text}
+    Tasks: {info_text} <br>
+    {sys_text}
+    ///
+    """
+    )
     return
 
 
@@ -139,8 +144,8 @@ def read_power_balance(path):
 
 
 @app.cell
-def _(done_tasks, info_kind, mo, race_path):
-    mo.stop(info_kind == 'danger', mo.md("**Submit the form to continue.**"))
+def _(done_tasks, race_path):
+    #mo.stop(get_hstate() == 'attention', mo.md("**Submit the form to continue.**"))
     tasks_data =[]
     for task in done_tasks:
         pb = read_power_balance(race_path.joinpath(task))
@@ -153,8 +158,8 @@ def _(done_tasks, info_kind, mo, race_path):
 
 
 @app.cell
-def _(info_kind, mo, tasks_data):
-    mo.stop(info_kind == 'danger', mo.md("**Submit the form to continue.**"))
+def _(mo, tasks_data):
+    #mo.stop(get_hstate() == 'attention', mo.md("**Submit the form to continue.**"))
     import pandas as pd
     df = pd.DataFrame.from_dict(tasks_data)
     table = mo.ui.table(data=df)
@@ -162,8 +167,8 @@ def _(info_kind, mo, tasks_data):
 
 
 @app.cell
-def _(df, info_kind, mo, params):
-    mo.stop(info_kind == 'danger', mo.md("**Submit the form to continue.**"))
+def _(df, params):
+    #mo.stop(get_hstate() == 'attention', mo.md("**Submit the form to continue.**"))
     from matplotlib import pyplot as plt
     fig_pabs, ax_pabs = plt.subplots()
     fig_pabs.suptitle('Pabs')
@@ -204,9 +209,7 @@ def _(done_tasks, mo):
 @app.cell
 def _(
     done_tasks,
-    info_kind,
     log_checkbox,
-    mo,
     params,
     pd,
     plt,
@@ -215,7 +218,7 @@ def _(
     race_path,
     tasks,
 ):
-    mo.stop(info_kind == 'danger', mo.md("**Submit the form to continue.**"))
+    #mo.stop(get_hstate() == 'attention', mo.md("**Submit the form to continue.**"))
     if params['series']['var'] == 'Nr':
         title = params['common']['name'] + ' Mmax=' + params['w2grid']['Mmax']
     else:
