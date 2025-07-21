@@ -253,12 +253,29 @@ def _(mo, tasks):
 
 
 @app.cell
-def _(ax, ax_pabs, mo, params, plot_options, table, tasks):
+def _(mo, params):
+    def create_view_item(item):
+        return mo.md(f">{item[0]} = {item[1]}")
+
+    def create_view_section(section):
+        text = [f" {i[0]} = {i[1]}" for i in section]
+        return mo.md('>'+'<br>'.join(text))
+    
+    #prams_ui ={f"**{s}**": mo.vstack([create_view_item(i) for i in params.items(s)]) for s in params.sections()}
+    prams_ui ={f"**{s}**": create_view_section(params.items(s)) for s in params.sections()}
+
+    return (prams_ui,)
+
+
+@app.cell
+def _(ax, ax_pabs, mo, plot_options, prams_ui, table, tasks):
     mo.ui.tabs({
         "Pabs table": table,
         "Pabs": mo.as_html(ax_pabs),
         "Pabs(psi)": mo.hstack([mo.as_html(ax), tasks, plot_options]),
-        'Params':mo.tree(params.sections())
+        #'Params': mo.tree({s:dict(params.items(s)) for s in params.sections()}, label='input.par'),
+        'Params': mo.accordion(prams_ui, multiple=True)
+    
     })
     return
 
