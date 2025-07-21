@@ -68,8 +68,8 @@ def _(mo):
 def _(race_browser, set_hstate):
     race_path = race_browser.path(index=0)
     if race_path:
+        race_name = race_path.name
         if race_path.joinpath('done_tasks.txt').exists():
-            #cfg.set_initial_path(race_path.parent.parent.as_posix())
             done_tasks = get_done_tasks(race_path)
             info_text = ", ".join(done_tasks)
             set_hstate('admonition')
@@ -77,9 +77,10 @@ def _(race_browser, set_hstate):
             info_text = "done_tasks not exists!"
             set_hstate('attention')
     else:
-        info_text = 'danger'  
+        info_text = '**Select race folder**'  
+        race_name = ''
         set_hstate('attention')
-    return done_tasks, info_text, race_path
+    return done_tasks, info_text, race_name, race_path
 
 
 @app.cell
@@ -121,10 +122,10 @@ def _(configparser, race_path, set_hstate):
 
 
 @app.cell
-def _(get_hstate, info_text, inp_text, mo, race_browser, sys_text):
+def _(get_hstate, info_text, inp_text, mo, race_name, sys_text):
     mo.md(
         f"""
-    /// {get_hstate()} | Work: {race_browser.path(index=0).name} {inp_text}
+    /// {get_hstate()} | Work: {race_name} {inp_text}
     Tasks: {info_text} <br>
     {sys_text}
     ///
