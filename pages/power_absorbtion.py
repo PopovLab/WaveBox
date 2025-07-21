@@ -125,7 +125,7 @@ def _(configparser, race_path, set_hstate):
 def _(get_hstate, info_text, inp_text, mo, race_name, sys_text):
     mo.md(
         f"""
-    /// {get_hstate()} | Work: {race_name} {inp_text}
+    /// {get_hstate()} | Race: {race_name} {inp_text}
     Tasks: {info_text} <br>
     {sys_text}
     ///
