@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.14.11"
+__generated_with = "0.14.12"
 app = marimo.App(width="medium", app_title="Qq")
 
 
@@ -19,26 +19,20 @@ def _():
 
 @app.cell
 def _(mo):
-    mo.notebook_dir().parent
-    return
-
-
-@app.cell
-def _(mo):
     mo.md("""# Settings""")
     return
 
 
 @app.cell
 def _():
-    import config as cfg
-    cfg.get_initial_path()
-    return (cfg,)
+    from config import get_initial_path
+    get_initial_path()
+    return (get_initial_path,)
 
 
 @app.cell
-def _(cfg, mo):
-    form = mo.ui.file_browser(initial_path=cfg.get_initial_path(), 
+def _(get_initial_path, mo):
+    form = mo.ui.file_browser(initial_path= get_initial_path(), 
                                         selection_mode='directory',
                                         label='Select Base folder',
                                         multiple= False).form()
@@ -46,8 +40,21 @@ def _(cfg, mo):
 
 
 @app.cell
-def select_cell(form, mo):
-    mo.vstack([form ,mo.md(f"Has value: {form.value}")])
+def select_cell(form):
+    form 
+    return
+
+
+@app.cell
+def _(form, mo):
+    from config import set_initial_path
+    if form.value:
+        set_initial_path(form.value[0].id)
+        out_text= form.value[0].id
+    else:
+        out_text ='Select base folder'
+
+    mo.md(out_text)    
     return
 
 
