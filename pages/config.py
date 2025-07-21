@@ -11,6 +11,6 @@ def get_initial_path():
         return "No init_path file found"
 
 def set_initial_path(init_path):
-    data_file = mo.notebook_dir() / "data" / "initial_path.txt"
+    data_file = mo.notebook_dir().parent / "data" / "initial_path.txt"
     with data_file.open("w") as file:
        file.write(init_path)
