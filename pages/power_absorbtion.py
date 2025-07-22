@@ -204,7 +204,8 @@ def _(log_checkbox, mo, psi_max, psi_min):
 @app.cell
 def _(done_tasks, mo):
     tasks = mo.ui.array([mo.ui.checkbox(label=task, value=True) for task in done_tasks], label="Task list")
-    return (tasks,)
+    radio = mo.ui.radio(options=done_tasks)
+    return radio, tasks
 
 
 @app.cell
@@ -228,7 +229,6 @@ def _(
     fig.suptitle(title)
     for task1, tv in zip(done_tasks, tasks.value):
         if tv:
-            #pb = read_power_balance(race_path.joinpath(task))
             pabs_psi = race_path.joinpath(task1).joinpath('pabs(psi).dat')
             df1 = pd.read_table(pabs_psi, header=None, names=['psi','dV','Pabs', 'PabsLD','PabsTT','PabsMX'], sep='\\s+' )
             ax.plot(df1['psi'], df1['Pabs']/df1['dV'] , label=task1)
@@ -241,15 +241,33 @@ def _(
     ax.set_ylabel('Pabs/dV');
     ax.autoscale(enable=True, axis='y', tight= True)
     #plt.show()
-
-
-    return (ax,)
+    return ax, title
 
 
 @app.cell
 def _(mo, tasks):
     tasks_stack = mo.hstack([tasks, tasks.value], justify="space-between")
     return
+
+
+@app.cell
+def _(mo, pd, plt, race_path, radio, title):
+    def render_eflda():
+        fig, ax = plt.subplots()
+        fig.suptitle(title)
+        if radio.value:
+            task1 = radio.value
+            pabs_psi = race_path.joinpath(task1).joinpath('Eflda.dat')
+            df1 = pd.read_table(pabs_psi, header=None, names=['X','Y','Pabs'], sep='\\s+' )
+            #ax.plot(df1['X'], df1['Pabs'] , label=task1)
+            ax.scatter(df1['X'], df1['Y'], df1['Pabs'], label=task1)
+            #fig.colorbar(pcm, ax=ax[0], extend='max', label='linear scaling')
+        ax.legend()
+        ax.set_aspect('equal')
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y');
+        return mo.as_html(ax)
+    return (render_eflda,)
 
 
 @app.cell
@@ -260,7 +278,7 @@ def _(mo, params):
     def create_view_section(section):
         text = [f" {i[0]} = {i[1]}" for i in section]
         return mo.md('>'+'<br>'.join(text))
-    
+
     #prams_ui ={f"**{s}**": mo.vstack([create_view_item(i) for i in params.items(s)]) for s in params.sections()}
     prams_ui ={f"**{s}**": create_view_section(params.items(s)) for s in params.sections()}
 
@@ -268,15 +286,31 @@ def _(mo, params):
 
 
 @app.cell
-def _(ax, ax_pabs, mo, plot_options, prams_ui, table, tasks):
+def _(
+    ax,
+    ax_pabs,
+    mo,
+    plot_options,
+    prams_ui,
+    radio,
+    render_eflda,
+    table,
+    tasks,
+):
     mo.ui.tabs({
         "Pabs table": table,
         "Pabs": mo.as_html(ax_pabs),
         "Pabs(psi)": mo.hstack([mo.as_html(ax), tasks, plot_options]),
         #'Params': mo.tree({s:dict(params.items(s)) for s in params.sections()}, label='input.par'),
+        "Eflda": mo.hstack([mo.lazy(render_eflda, show_loading_indicator=True), radio]),
         'Params': mo.accordion(prams_ui, multiple=True)
-    
+
     })
+    return
+
+
+@app.cell
+def _():
     return
 
 
