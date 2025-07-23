@@ -334,17 +334,23 @@ def _(
 
 
 @app.cell
-def _(mo):
+def _(mo, race_path):
+    output_gif = race_path.joinpath('ani.gif')
+    fps = 5
+    dpi = 100
     create_animation = mo.ui.run_button(label="Create Animation", kind='warn')
     create_animation
-    return (create_animation,)
+    return create_animation, dpi, fps, output_gif
 
 
 @app.cell
 def _(
     create_animation,
     done_tasks,
+    dpi,
+    fps,
     mo,
+    output_gif,
     pd,
     plt,
     race_path,
@@ -354,9 +360,6 @@ def _(
     mo.stop(not create_animation.value)
     #import matplotlib.pyplot as plt
     from matplotlib.animation import FuncAnimation
-    output_gif = race_path.joinpath('ani.gif')
-    fps = 5
-    dpi = 100
     #fig, ax1 = plt.subplots(figsize=(7, 6))
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6), constrained_layout=True)
     #fig.subplots_adjust(right=0.99,wspace=0.01, hspace=0.01)
@@ -375,6 +378,7 @@ def _(
         pabs_psi = race_path.joinpath(task).joinpath('Eflda.dat')
         df = pd.read_table(pabs_psi, header=None, names=['X','Y','eflda'], sep='\\s+' )
         #return axis.scatter(df['X'], df['Y'], df['eflda'],c = df['eflda'], cmap=cmhot, alpha=0.8, label=task)
+        im1.set_offsets([df['X'], df['Y']])
         im1.set_array(df['eflda'])
         ax2.relim()
         ax2.autoscale_view()
@@ -398,12 +402,18 @@ def _(
     print(f"\nАнимация сохранена в {output_gif.name}")
     plt.close()  
 
-    return (output_gif,)
+    return
 
 
 @app.cell
-def _(create_animation, mo, output_gif):
-    mo.stop(not create_animation.value)
+def _(output_gif):
+    output_gif
+    return
+
+
+@app.cell
+def _(mo, output_gif):
+    mo.stop(not output_gif.exists())
     mo.image(src=output_gif)
     return
 
