@@ -256,7 +256,7 @@ def _(mo, pd, plt, race_path, radio, title):
     def render_pabs_axis(task, axis):
         pabs_psi = race_path.joinpath(task).joinpath('pabs(psi).dat')
         df = pd.read_table(pabs_psi, header=None, names=['psi','dV','Pabs', 'PabsLD','PabsTT','PabsMX'], sep='\\s+' )
-        axis.plot(df['psi'], df['Pabs'] , label=task)
+        return axis.plot(df['psi'], df['Pabs'], label=task)
     
     def render_Pabs():
         fig, ax = plt.subplots()
@@ -267,7 +267,7 @@ def _(mo, pd, plt, race_path, radio, title):
         ax.set_xlabel('psi')
         ax.set_ylabel('Pabs');
         return mo.as_html(ax)
-    return (render_Pabs,)
+    return render_Pabs, render_pabs_axis
 
 
 @app.cell
@@ -339,9 +339,52 @@ def _(mo):
 
 
 @app.cell
-def _(create_animation, mo):
+def _(create_animation, done_tasks, mo, pd, plt, race_path, render_pabs_axis):
     mo.stop(not create_animation.value)
+    #import matplotlib.pyplot as plt
+    from matplotlib.animation import FuncAnimation
+    output_gif = race_path.joinpath('ani.gif')
+    fps = 15
+    dpi = 100
+    fig, ax1 = plt.subplots(figsize=(7, 6))
+    fig.subplots_adjust(right=0.99,wspace=0.01, hspace=0.01)
+    n_frames = len(done_tasks)
+    line, = render_pabs_axis(done_tasks[0], ax1)
+    #im1, = ax1.plot([1,3,4,5], label='test')
+    def frame_update(frame_index):
+        task = done_tasks[frame_index]
+        pabs_psi = race_path.joinpath(task).joinpath('pabs(psi).dat')
+        df = pd.read_table(pabs_psi, header=None, names=['psi','dV','Pabs', 'PabsLD','PabsTT','PabsMX'], sep='\\s+' )
+        line.set_xdata(df['psi'])
+        line.set_ydata(df['Pabs'])
+        ax1.set_title(f"{task} ", fontsize=14)
+        return [line]
 
+    animation = FuncAnimation(
+        fig, 
+        frame_update, 
+        frames=range(0, n_frames, 1),
+        interval=1000//fps,
+        blit=True
+    )
+    with mo.status.progress_bar(total=n_frames) as bar:
+        animation.save(
+            output_gif,
+            writer='pillow',
+            dpi=dpi,
+            progress_callback=lambda i, n: bar.update())
+    
+
+    print(f"\nАнимация сохранена в {output_gif.name}")
+    plt.close()  
+
+    return (output_gif,)
+
+
+@app.cell
+def _(create_animation, mo, output_gif):
+    mo.stop(not create_animation.value)
+    mo.image(src=output_gif)
     return
 
 
