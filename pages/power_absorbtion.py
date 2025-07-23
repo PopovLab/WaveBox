@@ -252,8 +252,28 @@ def _(mo, tasks):
 
 @app.cell
 def _(mo, pd, plt, race_path, radio, title):
-    cmhot = plt.get_cmap("plasma")
+    def render_pabs_axis(task, axis):
+        pabs_psi = race_path.joinpath(task).joinpath('pabs(psi).dat')
+        df = pd.read_table(pabs_psi, header=None, names=['psi','dV','Pabs', 'PabsLD','PabsTT','PabsMX'], sep='\\s+' )
+        axis.plot(df['psi'], df['Pabs'] , label=task)
+    
+    def render_Pabs():
+        fig, ax = plt.subplots()
+        fig.suptitle(title)
+        if radio.value:
+            render_pabs_axis(radio.value, ax)
+        ax.legend()
+        ax.set_xlabel('psi')
+        ax.set_ylabel('Pabs');
+        return mo.as_html(ax)
+    return (render_Pabs,)
+
+
+@app.cell
+def _(mo, pd, plt, race_path, radio, title):
+
     def render_eflda():
+        cmhot = plt.get_cmap("plasma")
         fig, ax = plt.subplots()
         fig.suptitle(title)
         if radio.value:
@@ -293,6 +313,7 @@ def _(
     plot_options,
     prams_ui,
     radio,
+    render_Pabs,
     render_eflda,
     table,
     tasks,
@@ -302,7 +323,7 @@ def _(
         "Pabs": mo.as_html(ax_pabs),
         "Pabs(psi)": mo.hstack([mo.as_html(ax), tasks, plot_options]),
         #'Params': mo.tree({s:dict(params.items(s)) for s in params.sections()}, label='input.par'),
-        "Eflda": mo.hstack([mo.center(mo.lazy(render_eflda, show_loading_indicator=True)), radio]),
+        "Eflda": mo.hstack([ mo.lazy(render_eflda, show_loading_indicator=True),mo.lazy(render_Pabs()), radio]),
         'Params': mo.accordion(prams_ui, multiple=True)
 
     })
@@ -317,18 +338,9 @@ def _(mo):
 
 
 @app.cell
-async def _(create_animation, mo):
+def _(create_animation, mo):
     mo.stop(not create_animation.value)
-    import asyncio
-    create_animation
-    for _ in mo.status.progress_bar(
-        range(10),
-        title="Loading",
-        subtitle="Please wait",
-        show_eta=True,
-        show_rate=True
-    ):
-        await asyncio.sleep(0.5)
+
     return
 
 
