@@ -259,9 +259,8 @@ def _(mo, pd, plt, race_path, radio, title):
         if radio.value:
             task1 = radio.value
             pabs_psi = race_path.joinpath(task1).joinpath('Eflda.dat')
-            df1 = pd.read_table(pabs_psi, header=None, names=['X','Y','Pabs'], sep='\\s+' )
-            #ax.plot(df1['X'], df1['Pabs'] , label=task1)
-            pcm = ax.scatter(df1['X'], df1['Y'], df1['Pabs'],c = df1['Pabs'], cmap=cmhot, alpha=0.8, label=task1)
+            df = pd.read_table(pabs_psi, header=None, names=['X','Y','Pabs'], sep='\\s+' )
+            pcm = ax.scatter(df['X'], df['Y'], df['Pabs'],c = df['Pabs'], cmap=cmhot, alpha=0.8, label=task1)
             fig.colorbar(pcm, ax=ax, extend='max', label='linear scaling')
         ax.legend()
         ax.set_aspect('equal')
@@ -303,7 +302,7 @@ def _(
         "Pabs": mo.as_html(ax_pabs),
         "Pabs(psi)": mo.hstack([mo.as_html(ax), tasks, plot_options]),
         #'Params': mo.tree({s:dict(params.items(s)) for s in params.sections()}, label='input.par'),
-        "Eflda": mo.hstack([mo.lazy(render_eflda, show_loading_indicator=True), radio]),
+        "Eflda": mo.hstack([mo.center(mo.lazy(render_eflda, show_loading_indicator=True)), radio]),
         'Params': mo.accordion(prams_ui, multiple=True)
 
     })
