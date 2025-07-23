@@ -273,15 +273,18 @@ def _(mo, pd, plt, race_path, radio, title):
 @app.cell
 def _(mo, pd, plt, race_path, radio, title):
 
-    def render_eflda():
+    def render_eflda_axis(task, axis):
         cmhot = plt.get_cmap("plasma")
+        pabs_psi = race_path.joinpath(task).joinpath('Eflda.dat')
+        df = pd.read_table(pabs_psi, header=None, names=['X','Y','eflda'], sep='\\s+' )
+        pcm = axis.scatter(df['X'], df['Y'], df['eflda'],c = df['eflda'], cmap=cmhot, alpha=0.8, label=task)
+        return pcm
+    
+    def render_eflda():
         fig, ax = plt.subplots()
         fig.suptitle(title)
         if radio.value:
-            task1 = radio.value
-            pabs_psi = race_path.joinpath(task1).joinpath('Eflda.dat')
-            df = pd.read_table(pabs_psi, header=None, names=['X','Y','eflda'], sep='\\s+' )
-            pcm = ax.scatter(df['X'], df['Y'], df['eflda'],c = df['eflda'], cmap=cmhot, alpha=0.8, label=task1)
+            pcm = render_eflda_axis(radio.value, ax)
             fig.colorbar(pcm, ax=ax, extend='max', label='eflda')
         ax.legend()
         ax.set_aspect('equal')
