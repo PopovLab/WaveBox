@@ -252,6 +252,7 @@ def _(mo, tasks):
 
 @app.cell
 def _(mo, pd, plt, race_path, radio, title):
+    cmhot = plt.get_cmap("plasma")
     def render_eflda():
         fig, ax = plt.subplots()
         fig.suptitle(title)
@@ -260,8 +261,8 @@ def _(mo, pd, plt, race_path, radio, title):
             pabs_psi = race_path.joinpath(task1).joinpath('Eflda.dat')
             df1 = pd.read_table(pabs_psi, header=None, names=['X','Y','Pabs'], sep='\\s+' )
             #ax.plot(df1['X'], df1['Pabs'] , label=task1)
-            ax.scatter(df1['X'], df1['Y'], df1['Pabs'], label=task1)
-            #fig.colorbar(pcm, ax=ax[0], extend='max', label='linear scaling')
+            pcm = ax.scatter(df1['X'], df1['Y'], df1['Pabs'],c = df1['Pabs'], cmap=cmhot, alpha=0.8, label=task1)
+            fig.colorbar(pcm, ax=ax, extend='max', label='linear scaling')
         ax.legend()
         ax.set_aspect('equal')
         ax.set_xlabel('X')
