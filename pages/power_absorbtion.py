@@ -277,8 +277,7 @@ def _(mo, pd, plt, race_path, radio, title):
         cmhot = plt.get_cmap("plasma")
         pabs_psi = race_path.joinpath(task).joinpath('Eflda.dat')
         df = pd.read_table(pabs_psi, header=None, names=['X','Y','eflda'], sep='\\s+' )
-        pcm = axis.scatter(df['X'], df['Y'], df['eflda'],c = df['eflda'], cmap=cmhot, alpha=0.8, label=task)
-        return pcm
+        return axis.scatter(df['X'], df['Y'], df['eflda'],c = df['eflda'], cmap=cmhot, alpha=0.8, label=task)
     
     def render_eflda():
         fig, ax = plt.subplots()
@@ -291,7 +290,7 @@ def _(mo, pd, plt, race_path, radio, title):
         ax.set_xlabel('X')
         ax.set_ylabel('Y');
         return mo.as_html(ax)
-    return (render_eflda,)
+    return render_eflda, render_eflda_axis
 
 
 @app.cell
@@ -342,18 +341,28 @@ def _(mo):
 
 
 @app.cell
-def _(create_animation, done_tasks, mo, pd, plt, race_path, render_pabs_axis):
+def _(
+    create_animation,
+    done_tasks,
+    mo,
+    pd,
+    plt,
+    race_path,
+    render_eflda_axis,
+    render_pabs_axis,
+):
     mo.stop(not create_animation.value)
     #import matplotlib.pyplot as plt
     from matplotlib.animation import FuncAnimation
     output_gif = race_path.joinpath('ani.gif')
-    fps = 15
+    fps = 5
     dpi = 100
-    fig, ax1 = plt.subplots(figsize=(7, 6))
-    fig.subplots_adjust(right=0.99,wspace=0.01, hspace=0.01)
+    #fig, ax1 = plt.subplots(figsize=(7, 6))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6), constrained_layout=True)
+    #fig.subplots_adjust(right=0.99,wspace=0.01, hspace=0.01)
     n_frames = len(done_tasks)
     line, = render_pabs_axis(done_tasks[0], ax1)
-    #im1, = ax1.plot([1,3,4,5], label='test')
+    im1  = render_eflda_axis(done_tasks[0], ax2)
     def frame_update(frame_index):
         task = done_tasks[frame_index]
         pabs_psi = race_path.joinpath(task).joinpath('pabs(psi).dat')
@@ -361,6 +370,11 @@ def _(create_animation, done_tasks, mo, pd, plt, race_path, render_pabs_axis):
         line.set_xdata(df['psi'])
         line.set_ydata(df['Pabs'])
         ax1.set_title(f"{task} ", fontsize=14)
+
+        pabs_psi = race_path.joinpath(task).joinpath('Eflda.dat')
+        df = pd.read_table(pabs_psi, header=None, names=['X','Y','eflda'], sep='\\s+' )
+        #return axis.scatter(df['X'], df['Y'], df['eflda'],c = df['eflda'], cmap=cmhot, alpha=0.8, label=task)
+        im1.set_array(df['eflda'])
         return [line]
 
     animation = FuncAnimation(
