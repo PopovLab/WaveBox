@@ -277,7 +277,7 @@ def _(mo, pd, plt, race_path, radio, title):
         cmhot = plt.get_cmap("plasma")
         pabs_psi = race_path.joinpath(task).joinpath('Eflda.dat')
         df = pd.read_table(pabs_psi, header=None, names=['X','Y','eflda'], sep='\\s+' )
-        return axis.scatter(df['X'], df['Y'], df['eflda'],c = df['eflda'], cmap=cmhot, alpha=0.8, label=task)
+        return axis.scatter(df['X'], df['Y'],c = df['eflda'], cmap=cmhot, alpha=0.8, label=task)
     
     def render_eflda():
         fig, ax = plt.subplots()
@@ -370,11 +370,14 @@ def _(
         line.set_xdata(df['psi'])
         line.set_ydata(df['Pabs'])
         ax1.set_title(f"{task} ", fontsize=14)
-
+        ax1.relim()
+        ax1.autoscale_view()
         pabs_psi = race_path.joinpath(task).joinpath('Eflda.dat')
         df = pd.read_table(pabs_psi, header=None, names=['X','Y','eflda'], sep='\\s+' )
         #return axis.scatter(df['X'], df['Y'], df['eflda'],c = df['eflda'], cmap=cmhot, alpha=0.8, label=task)
         im1.set_array(df['eflda'])
+        ax2.relim()
+        ax2.autoscale_view()
         return [line]
 
     animation = FuncAnimation(
