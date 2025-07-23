@@ -259,9 +259,9 @@ def _(mo, pd, plt, race_path, radio, title):
         if radio.value:
             task1 = radio.value
             pabs_psi = race_path.joinpath(task1).joinpath('Eflda.dat')
-            df = pd.read_table(pabs_psi, header=None, names=['X','Y','Pabs'], sep='\\s+' )
-            pcm = ax.scatter(df['X'], df['Y'], df['Pabs'],c = df['Pabs'], cmap=cmhot, alpha=0.8, label=task1)
-            fig.colorbar(pcm, ax=ax, extend='max', label='linear scaling')
+            df = pd.read_table(pabs_psi, header=None, names=['X','Y','eflda'], sep='\\s+' )
+            pcm = ax.scatter(df['X'], df['Y'], df['eflda'],c = df['eflda'], cmap=cmhot, alpha=0.8, label=task1)
+            fig.colorbar(pcm, ax=ax, extend='max', label='eflda')
         ax.legend()
         ax.set_aspect('equal')
         ax.set_xlabel('X')
@@ -310,7 +310,25 @@ def _(
 
 
 @app.cell
-def _():
+def _(mo):
+    create_animation = mo.ui.run_button(label="Create Animation", kind='warn')
+    create_animation
+    return (create_animation,)
+
+
+@app.cell
+async def _(create_animation, mo):
+    mo.stop(not create_animation.value)
+    import asyncio
+    create_animation
+    for _ in mo.status.progress_bar(
+        range(10),
+        title="Loading",
+        subtitle="Please wait",
+        show_eta=True,
+        show_rate=True
+    ):
+        await asyncio.sleep(0.5)
     return
 
 
