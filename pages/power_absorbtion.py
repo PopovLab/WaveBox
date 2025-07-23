@@ -257,7 +257,7 @@ def _(mo, pd, plt, race_path, radio, title):
         pabs_psi = race_path.joinpath(task).joinpath('pabs(psi).dat')
         df = pd.read_table(pabs_psi, header=None, names=['psi','dV','Pabs', 'PabsLD','PabsTT','PabsMX'], sep='\\s+' )
         return axis.plot(df['psi'], df['Pabs'], label=task)
-    
+
     def render_Pabs():
         fig, ax = plt.subplots()
         fig.suptitle(title)
@@ -276,16 +276,17 @@ def _(mo, pd, plt, race_path, radio, title):
     def render_eflda_axis(task, axis):
         cmhot = plt.get_cmap("plasma")
         pabs_psi = race_path.joinpath(task).joinpath('Eflda.dat')
-        df = pd.read_table(pabs_psi, header=None, names=['X','Y','eflda'], sep='\\s+' )
-        return axis.scatter(df['X'], df['Y'],c = df['eflda'], cmap=cmhot, alpha=0.8, label=task)
-    
+        df = pd.read_table(pabs_psi, header=None, names=['X','Y','eflda'], sep='\\s+')
+        #return axis.scatter(df['X'], df['Y'], c = df['eflda'], cmap=cmhot, alpha=0.8, label=task)
+        return axis.tripcolor(df['X'], df['Y'], df['eflda'], cmap="plasma", shading='flat', label=task)
+
     def render_eflda():
         fig, ax = plt.subplots()
         fig.suptitle(title)
         if radio.value:
             pcm = render_eflda_axis(radio.value, ax)
             fig.colorbar(pcm, ax=ax, extend='max', label='eflda')
-        ax.legend()
+        #ax.legend()
         ax.set_aspect('equal')
         ax.set_xlabel('X')
         ax.set_ylabel('Y');
@@ -397,7 +398,7 @@ def _(
             writer='pillow',
             dpi=dpi,
             progress_callback=lambda i, n: bar.update())
-    
+
 
     print(f"\nАнимация сохранена в {output_gif.name}")
     plt.close()  
