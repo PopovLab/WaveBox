@@ -225,23 +225,24 @@ def _(
         title = params['common']['name'] + ' Mmax=' + params['w2grid']['Mmax']
     else:
         title = params['common']['name'] +' Nr=' + params['w2grid']['Nr'] 
-    fig, ax = plt.subplots()
-    fig.suptitle(title)
-    for task1, tv in zip(done_tasks, tasks.value):
-        if tv:
-            pabs_psi = race_path.joinpath(task1).joinpath('pabs(psi).dat')
-            df1 = pd.read_table(pabs_psi, header=None, names=['psi','dV','Pabs', 'PabsLD','PabsTT','PabsMX'], sep='\\s+' )
-            ax.plot(df1['psi'], df1['Pabs']/df1['dV'] , label=task1)
-    ax.legend()
-    ax.set_xlim([psi_min.value, psi_max.value])
-    #ax.set_ylim([0, 0.000002])
-    if log_checkbox.value:
-        ax.set_yscale('log')
-    ax.set_xlabel('psi')
-    ax.set_ylabel('Pabs/dV');
-    ax.autoscale(enable=True, axis='y', tight= True)
-    #plt.show()
-    return ax, title
+    def render_pabs_collection():
+        fig, ax = plt.subplots()
+        fig.suptitle(title)
+        for task1, tv in zip(done_tasks, tasks.value):
+            if tv:
+                pabs_psi = race_path.joinpath(task1).joinpath('pabs(psi).dat')
+                df1 = pd.read_table(pabs_psi, header=None, names=['psi','dV','Pabs', 'PabsLD','PabsTT','PabsMX'], sep='\\s+' )
+                ax.plot(df1['psi'], df1['Pabs']/df1['dV'] , label=task1)
+        ax.legend()
+        ax.set_xlim([psi_min.value, psi_max.value])
+        #ax.set_ylim([0, 0.000002])
+        if log_checkbox.value:
+            ax.set_yscale('log')
+        ax.set_xlabel('psi')
+        ax.set_ylabel('Pabs/dV');
+        ax.autoscale(enable=True, axis='y', tight= True)
+        return ax
+    return render_pabs_collection, title
 
 
 @app.cell
@@ -307,7 +308,6 @@ def _(mo, params):
 
 @app.cell
 def _(
-    ax,
     ax_pabs,
     mo,
     plot_options,
@@ -315,13 +315,14 @@ def _(
     radio,
     render_Pabs,
     render_eflda,
+    render_pabs_collection,
     table,
     tasks,
 ):
     mo.ui.tabs({
         "Pabs table": table,
         "Pabs": mo.as_html(ax_pabs),
-        "Pabs(psi)": mo.hstack([mo.as_html(ax), tasks, plot_options]),
+        "Pabs(psi)": mo.hstack([mo.as_html(render_pabs_collection()), tasks, plot_options]),
         #'Params': mo.tree({s:dict(params.items(s)) for s in params.sections()}, label='input.par'),
         "Eflda": mo.hstack([ mo.lazy(render_eflda, show_loading_indicator=True),mo.lazy(render_Pabs()), radio]),
         'Params': mo.accordion(prams_ui, multiple=True)
