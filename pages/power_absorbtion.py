@@ -378,7 +378,7 @@ def _(
         pabs_psi = race_path.joinpath(task).joinpath('Eflda.dat')
         df = pd.read_table(pabs_psi, header=None, names=['X','Y','eflda'], sep='\\s+' )
         #return axis.scatter(df['X'], df['Y'], df['eflda'],c = df['eflda'], cmap=cmhot, alpha=0.8, label=task)
-        im1.set_offsets([df['X'], df['Y']])
+        im1.set_offsets(df[['X', 'Y']].to_numpy())
         im1.set_array(df['eflda'])
         ax2.relim()
         ax2.autoscale_view()
