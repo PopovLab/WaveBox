@@ -204,7 +204,7 @@ def _(log_checkbox, mo, psi_max, psi_min):
 @app.cell
 def _(done_tasks, mo):
     tasks = mo.ui.array([mo.ui.checkbox(label=task, value=True) for task in done_tasks], label="Task list")
-    radio = mo.ui.radio(options=done_tasks)
+    radio = mo.ui.radio(options=done_tasks, value=done_tasks[0])
     return radio, tasks
 
 
@@ -275,9 +275,8 @@ def _(mo, pd, plt, race_path, radio, title):
 
     def render_eflda_axis(task, axis):
         cmhot = plt.get_cmap("plasma")
-        pabs_psi = race_path.joinpath(task).joinpath('Eflda.dat')
-        df = pd.read_table(pabs_psi, header=None, names=['X','Y','eflda'], sep='\\s+')
-        #return axis.scatter(df['X'], df['Y'], c = df['eflda'], cmap=cmhot, alpha=0.8, label=task)
+        Eflda = race_path.joinpath(task).joinpath('Eflda.dat')
+        df = pd.read_table(Eflda, header=None, names=['X','Y','eflda'], sep='\\s+')
         return axis.tripcolor(df['X'], df['Y'], df['eflda'], cmap="plasma", shading='flat', label=task)
 
     def render_eflda():
