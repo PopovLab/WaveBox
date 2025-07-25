@@ -347,11 +347,12 @@ def _(mo):
     rerun = mo.ui.button(label="Rerun")
     rerun
 
-    return
+    return (rerun,)
 
 
 @app.cell
-def _(mo, preview_file):
+def _(mo, preview_file, rerun):
+    rerun
     mo.stop(not preview_file.exists())
     mo.video(
         src=preview_file,
