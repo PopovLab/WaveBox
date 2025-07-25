@@ -334,13 +334,37 @@ def _(
 
 
 @app.cell
-def _(mo, race_path):
-    output_gif = race_path.joinpath('ani.gif')
+def _(race_path):
+    preview_file = race_path.joinpath('preview.mp4')
     fps = 5
     dpi = 100
+    preview_file
+    return dpi, fps, preview_file
+
+
+@app.cell
+def _(mo):
+    rerun = mo.ui.button(label="Rerun")
+    rerun
+
+    return
+
+
+@app.cell
+def _(mo, preview_file):
+    mo.stop(not preview_file.exists())
+    mo.video(
+        src=preview_file,
+        controls=True,
+    )
+    return
+
+
+@app.cell
+def _(mo):
     create_animation = mo.ui.run_button(label="Create Animation", kind='warn')
     create_animation
-    return create_animation, dpi, fps, output_gif
+    return (create_animation,)
 
 
 @app.cell
@@ -350,9 +374,9 @@ def _(
     dpi,
     fps,
     mo,
-    output_gif,
     pd,
     plt,
+    preview_file,
     race_path,
     render_eflda_axis,
     render_pabs_axis,
@@ -360,6 +384,7 @@ def _(
     mo.stop(not create_animation.value)
     #import matplotlib.pyplot as plt
     from matplotlib.animation import FuncAnimation
+    import matplotlib.animation as animation
     #fig, ax1 = plt.subplots(figsize=(7, 6))
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6), constrained_layout=True)
     #fig.subplots_adjust(right=0.99,wspace=0.01, hspace=0.01)
@@ -385,37 +410,27 @@ def _(
         ax2.autoscale_view()
         return [line, actors['im1']]
 
-    animation = FuncAnimation(
+    animator = FuncAnimation(
         fig, 
         frame_update, 
         frames=range(0, n_frames, 1),
         interval=1000//fps,
         blit=True
     )
+    # Set up formatting for the movie files
+    Writer = animation.writers['ffmpeg']
+    writer = Writer(fps=fps, metadata=dict(artist='Me'), bitrate=1800)
     with mo.status.progress_bar(total=n_frames) as bar:
-        animation.save(
-            output_gif,
-            writer='pillow',
+        animator.save(
+            preview_file,
+            writer=writer,
             dpi=dpi,
             progress_callback=lambda i, n: bar.update())
 
 
-    print(f"\nАнимация сохранена в {output_gif.name}")
+    print(f"\nАнимация сохранена в {preview_file.name}")
     plt.close()  
 
-    return
-
-
-@app.cell
-def _(output_gif):
-    output_gif
-    return
-
-
-@app.cell
-def _(mo, output_gif):
-    mo.stop(not output_gif.exists())
-    mo.image(src=output_gif)
     return
 
 
