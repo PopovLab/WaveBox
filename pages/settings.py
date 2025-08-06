@@ -1,7 +1,7 @@
 import marimo
 
 __generated_with = "0.14.12"
-app = marimo.App(width="medium", app_title="Qq")
+app = marimo.App(width="medium", app_title="Settings")
 
 
 @app.cell
