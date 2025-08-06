@@ -8,7 +8,7 @@ def get_initial_path():
             return init_path
     else:
         #print("No init_path file found")
-        return "No init_path file found"
+        return ""
 
 def set_initial_path(init_path):
     data_file = mo.notebook_dir().parent / "data" / "initial_path.txt"
