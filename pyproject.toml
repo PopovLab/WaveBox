@@ -1,31 +1,16 @@
 [project]
 name = "wavebox"
 version = "0.1.0"
-description = "Wave2D Box"
-authors = [
-    {name = "Alex",email = "temper8@gmail.com"}
-]
+description = "Add your description here"
 readme = "README.md"
-
 requires-python = ">=3.13"
 dependencies = [
-    "marimo (>=0.14.11,<0.16.0)",
-    "numpy (>=2.3.1,<3.0.0)",
-    "matplotlib (>=3.10.3,<4.0.0)",
-    "config (>=0.5.1,<0.6.0)",
-    "pandas (>=2.3.1,<3.0.0)",
-    "watchdog (>=6.0.0,<7.0.0)",
-    "fastapi (>=0.116.1,<0.117.0)"
+    "config>=0.5.1",
+    "fastapi>=0.116.2",
+    "marimo==0.15.5",
+    "matplotlib>=3.10.6",
+    "numpy>=2.3.3",
+    "pandas>=2.3.2",
+    "plotly>=6.3.0",
+    "watchdog>=6.0.0",
 ]
-
-[tool.poetry]
-package-mode = false
-
-[tool.poetry.group.dev.dependencies]
-scipy = "^1.16.0"
-pyarrow = "^20.0.0"
-
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
-

@@ -1,1 +1,1 @@
-poetry run marimo edit
+uv run marimo edit
