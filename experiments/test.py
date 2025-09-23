@@ -59,16 +59,20 @@ def _(mo):
 
 @app.cell
 def _():
+    axis_style = dict(showline=True, linewidth=1, linecolor='black', mirror=True, ticks='outside', gridcolor='grey')
     layout_style = dict(
         margin=dict(r=20, t=30, b=10),
-        plot_bgcolor='white', paper_bgcolor='white',
-        legend=dict(
+        xaxis= axis_style,
+        yaxis= axis_style,
+        plot_bgcolor= 'white', paper_bgcolor='white',
+        legend= dict(
             orientation="v",
             y=1.01,
             x=1.01
         ),
         title_font_size=16,
         title_x=0.5 # Center the title
+    
     )
     return (layout_style,)
 
@@ -76,12 +80,14 @@ def _():
 @app.cell
 def _(layout_style, mo, np, omega):
     import plotly.express as px
-    x=np.linspace(0., 1., 130)
-    fig = px.line(x=x, y=[np.sin(omega.value*x), np.cos(omega.value*x)], title="sample figure")
-    fig.update_xaxes(showline=True, linewidth=1, linecolor='black', mirror=True, ticks='outside', gridcolor='grey')
-    fig.update_yaxes(showline=True, linewidth=1, linecolor='black', mirror=True, ticks='outside', gridcolor='grey')
+    x1=np.linspace(0., 1., 100)
+    x2=np.linspace(0., 1., 50)
+    fig = px.line( title="sample figure")
+    fig.add_scatter(x=x1, y=np.sin(omega.value*x1), name='sin')
+    fig.add_scatter(x=x2, y=np.cos(omega.value*x2), name='cos')
     fig.update_layout(layout_style)
     fig.update_yaxes(title_text='Y-axis')
+    fig.update_xaxes(title_text='X-axis')
 
     plot = mo.ui.plotly(fig)
     return (plot,)
