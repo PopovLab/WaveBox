@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.14.11"
+__generated_with = "0.15.5"
 app = marimo.App(width="medium", app_title="test")
 
 
@@ -47,22 +47,49 @@ def _():
     import numpy as np
     import marimo as mo
     from matplotlib import pyplot as plt
-    return mo, np, plt
+    return mo, np
 
 
 @app.cell
 def _(mo):
-    omega = mo.ui.slider(1,9)
+    omega = mo.ui.slider(1,19)
     omega
     return (omega,)
 
 
 @app.cell
-def _(np, omega, plt):
-    x=np.linspace(0., 1., 30)
-    plt.plot(x, np.sin(omega.value*x), label='sin')
-    plt.legend()
-    plt.show()
+def _():
+    layout_style = dict(
+        margin=dict(r=20, t=30, b=10),
+        plot_bgcolor='white', paper_bgcolor='white',
+        legend=dict(
+            orientation="v",
+            y=1.01,
+            x=1.01
+        ),
+        title_font_size=16,
+        title_x=0.5 # Center the title
+    )
+    return (layout_style,)
+
+
+@app.cell
+def _(layout_style, mo, np, omega):
+    import plotly.express as px
+    x=np.linspace(0., 1., 130)
+    fig = px.line(x=x, y=[np.sin(omega.value*x), np.cos(omega.value*x)], title="sample figure")
+    fig.update_xaxes(showline=True, linewidth=1, linecolor='black', mirror=True, ticks='outside', gridcolor='grey')
+    fig.update_yaxes(showline=True, linewidth=1, linecolor='black', mirror=True, ticks='outside', gridcolor='grey')
+    fig.update_layout(layout_style)
+    fig.update_yaxes(title_text='Y-axis')
+
+    plot = mo.ui.plotly(fig)
+    return (plot,)
+
+
+@app.cell
+def _(mo, omega, plot):
+    mo.vstack([plot, omega.value])
     return
 
 
