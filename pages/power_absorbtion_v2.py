@@ -34,19 +34,28 @@ def _(cfg, mo):
     return (folder_browser,)
 
 
+@app.function
+def get_race_list(directory_path):
+    path_list= [item for item in directory_path.iterdir() if item.is_dir()]            
+    return [ {'name':p.name, 'path':p} for p in path_list]
+
+
 @app.cell
 def _(folder_browser, mo):
-    race_browser = mo.ui.file_browser(initial_path=folder_browser.path(index=0),
-                                      selection_mode='directory',
-                                      label='Race folder',
-                                      restrict_navigation= True,
-                                      multiple= False)
-    return (race_browser,)
+    race_table = mo.ui.table(data=get_race_list(folder_browser.path(index=0)), pagination=True, show_download = False, selection= 'single')
+    race_table
+    return (race_table,)
 
 
 @app.cell
-def _(folder_browser, mo, race_browser):
-    mo.sidebar([mo.vstack([folder_browser, race_browser])])
+def _(race_table):
+    race_table.value[0]
+    return
+
+
+@app.cell
+def _(folder_browser, mo):
+    mo.sidebar([folder_browser])
     return
 
 
@@ -64,8 +73,8 @@ def _(mo):
 
 
 @app.cell
-def _(race_browser, set_hstate):
-    race_path = race_browser.path(index=0)
+def _(race_table, set_hstate):
+    race_path = race_table.value[0]['path']
     if race_path:
         race_name = race_path.name
         if race_path.joinpath('done_tasks.txt').exists():
@@ -180,7 +189,6 @@ def _():
         title_font_size=16,
         title_x=0.5 # Center the title
     )
-
     return (layout_style,)
 
 
@@ -227,7 +235,6 @@ def _(params):
         title = params['common']['name'] + ' Mmax=' + params['w2grid']['Mmax']
     else:
         title = params['common']['name'] +' Nr=' + params['w2grid']['Nr'] 
-
     return (title,)
 
 
@@ -254,7 +261,6 @@ def _(
         pabs_collection.update_yaxes(type="log")
     pabs_collection.update_yaxes(title_text='Pabs(kW)')
     pabs_collection.update_xaxes(title_text= params['series']['var']);
-
     return (pabs_collection,)
 
 
