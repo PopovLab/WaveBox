@@ -8,7 +8,7 @@ from fastapi import FastAPI, Form, Request, Response
 server = (
     marimo.create_asgi_app()
     .with_app(path="", root="./pages/index.py")
-    .with_app(path="/power_absorbtion", root="./pages/power_absorbtion.py")
+    .with_app(path="/viewer", root="./pages/power_absorbtion_v2.py")
     .with_app(path="/settings", root="./pages/settings.py")
     .with_app(path="/about", root="./pages/about.py")
 )
