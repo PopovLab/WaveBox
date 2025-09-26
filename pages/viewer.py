@@ -311,7 +311,7 @@ def _(mo, pd, plt, race_path, title):
             fig, ax = plt.subplots()
             fig.suptitle(title)
             pcm = render_eflda_axis(task_path, ax)
-            fig.colorbar(pcm, ax=ax, extend='max', label='eflda')
+            fig.colorbar(pcm, ax=ax, extend='max') #, label='eflda'
             #ax.legend()
             ax.set_aspect('equal')
             ax.set_xlabel('X')
@@ -319,8 +319,9 @@ def _(mo, pd, plt, race_path, title):
             # Save the plot to a file
             fig.savefig(eflda_plot, dpi=300, bbox_inches='tight', transparent=False)
         #return mo.as_html(ax)
-        return mo.image(src= eflda_plot, alt= 'eflda', width=600,height=450)
-    return (render_eflda,)
+        return mo.image(src= eflda_plot, alt= 'eflda', width=600,height=500)
+
+    return Path, render_eflda
 
 
 @app.cell
@@ -367,21 +368,42 @@ def _(
 @app.cell
 def _(done_tasks, mo):
     task_slider = mo.ui.slider(start=1, stop= len(done_tasks), label="Task", value=1)
-    def get_task():
-        return done_tasks[task_slider.value-1]
-    return get_task, task_slider
+
+    return (task_slider,)
 
 
 @app.cell
-def _(get_task, mo, render_Pabs, render_eflda, task_slider):
+def _():
+    return
 
+
+@app.cell
+def _(done_tasks, mo, render_Pabs, render_eflda, task_slider):
+    def get_task():
+        return done_tasks[task_slider.value-1]
     mo.vstack([
-        mo.hstack([task_slider,mo.md(f"Task - {get_task()}"), mo.ui.run_button(label="Clear", kind='warn')] ),
+        mo.hstack([task_slider,mo.md(f"Task - {get_task()}")]),
         mo.hstack([    
-            mo.lazy(render_eflda(get_task())),
+            mo.lazy(render_eflda(get_task()),show_loading_indicator=True),
             mo.lazy(render_Pabs(get_task()))]),
 
     ])
+    return
+
+
+@app.cell
+def _(Path, done_tasks, mo, race_path):
+    def clear_image_cach(x):
+        print(x)
+        for task in done_tasks:
+            img_path  =  Path(race_path).joinpath(task).joinpath('eflda_plot.png')
+            if img_path.exists():
+                try:
+                    img_path.unlink()  # Delete the file
+                    print(f"File '{img_path}' deleted successfully.")
+                except OSError as e:
+                    print(f"Error deleting file '{img_path}': {e}")
+    mo.ui.run_button(label="Clear image cache", kind='warn', on_change=clear_image_cach)
     return
 
 
