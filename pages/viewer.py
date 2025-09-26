@@ -169,7 +169,7 @@ def _(mo, tasks_data):
     #mo.stop(get_hstate() == 'attention', mo.md("**Submit the form to continue.**"))
     import pandas as pd
     df = pd.DataFrame.from_dict(tasks_data)
-    table = mo.ui.table(data=df)
+    table = mo.ui.table(data=df, selection=None)
     return df, pd, table
 
 
