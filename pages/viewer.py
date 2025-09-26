@@ -37,7 +37,7 @@ def _(cfg, mo):
 @app.function
 def get_race_list(directory_path):
     path_list= [item for item in directory_path.iterdir() if item.is_dir()]            
-    return [ {'name':p.name, 'path':p} for p in path_list]
+    return sorted([ {'name':p.name, 'path':p} for p in path_list], key=lambda item: item['name'], reverse=True)
 
 
 @app.cell
@@ -380,7 +380,7 @@ def _(get_task, mo, render_Pabs, render_eflda, task_slider):
         mo.hstack([    
             mo.lazy(render_eflda(get_task())),
             mo.lazy(render_Pabs(get_task()))]),
-   
+
     ])
     return
 
