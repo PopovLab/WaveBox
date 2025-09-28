@@ -143,10 +143,11 @@ def _(get_hstate, info_text, inp_text, mo, race_name, sys_text):
 @app.function
 def read_power_balance(path):
     pb = {}
-    with path.joinpath('power_balance.dat').open("r") as file:
-        content = [line.strip().split() for line in file.readlines()]
-        for line in content:
-            pb[line[0]] = float(line[2])
+    if path.joinpath('power_balance.dat').exists():
+        with path.joinpath('power_balance.dat').open("r") as file:
+            content = [line.strip().split() for line in file.readlines()]
+            for line in content:
+                pb[line[0]] = float(line[2])
     return pb
 
 
@@ -212,7 +213,8 @@ def _(mo):
 @app.cell
 def _(mo):
     log_checkbox = mo.ui.checkbox(label="log scale")
-    return (log_checkbox,)
+    dv_norm_checkbox = mo.ui.checkbox(label="dv norm")
+    return dv_norm_checkbox, log_checkbox
 
 
 @app.cell
@@ -241,6 +243,7 @@ def _(params):
 @app.cell
 def _(
     done_tasks,
+    dv_norm_checkbox,
     layout_style,
     log_checkbox,
     params,
@@ -254,8 +257,15 @@ def _(
     for task1, tv in zip(done_tasks, tasks.value):
         if tv:
             pabs_psi = race_path.joinpath(task1).joinpath('pabs(psi).dat')
+            if not pabs_psi.exists():
+                continue
             df1 = pd.read_table(pabs_psi, header=None, names=['psi','dV','Pabs', 'PabsLD','PabsTT','PabsMX'], sep='\\s+' )
-            pabs_collection.add_scatter(x=df1['psi'], y=df1['Pabs']/df1['dV'], name=task1)
+            if dv_norm_checkbox.value:
+                pabs_collection.add_scatter(x=df1['psi'], y=df1['Pabs']/df1['dV'], name=task1)
+            else:
+                pabs_collection.add_scatter(x=df1['psi'], y=df1['Pabs'], name=task1)
+
+            
     pabs_collection.update_layout(layout_style)
     if log_checkbox.value:
         pabs_collection.update_yaxes(type="log")
@@ -275,8 +285,9 @@ def _(mo, pd, race_path, title):
     from matplotlib import pyplot as plt
     def render_pabs_axis(task, axis):
         pabs_psi = race_path.joinpath(task).joinpath('pabs(psi).dat')
-        df = pd.read_table(pabs_psi, header=None, names=['psi','dV','Pabs', 'PabsLD','PabsTT','PabsMX'], sep='\\s+' )
-        return axis.plot(df['psi'], df['Pabs'], label=task)
+        if pabs_psi.exists():
+            df = pd.read_table(pabs_psi, header=None, names=['psi','dV','Pabs', 'PabsLD','PabsTT','PabsMX'], sep='\\s+' )
+            axis.plot(df['psi'], df['Pabs'], label=task)
 
     def render_Pabs(task):
         fig, ax = plt.subplots()
@@ -320,7 +331,6 @@ def _(mo, pd, plt, race_path, title):
             fig.savefig(eflda_plot, dpi=300, bbox_inches='tight', transparent=False)
         #return mo.as_html(ax)
         return mo.image(src= eflda_plot, alt= 'eflda', width=600,height=500)
-
     return Path, render_eflda
 
 
@@ -340,6 +350,7 @@ def _(mo, params):
 
 @app.cell
 def _(
+    dv_norm_checkbox,
     log_checkbox,
     mo,
     pabs_collection,
@@ -354,7 +365,9 @@ def _(
     mo.ui.tabs({
         "Pabs table": table,
         "Pabs": mo.ui.plotly(px_line),
-        "Pabs(psi)": mo.hstack([mo.vstack([mo.ui.plotly(pabs_collection), log_checkbox]), tasks]),
+        "Pabs(psi)": mo.hstack([
+            mo.vstack([mo.ui.plotly(pabs_collection), mo.hstack([log_checkbox, dv_norm_checkbox])]),
+            tasks]),
         #'Params': mo.tree({s:dict(params.items(s)) for s in params.sections()}, label='input.par'),
         "Eflda": mo.hstack([ 
             mo.lazy(render_eflda(radio.value)),
@@ -368,7 +381,6 @@ def _(
 @app.cell
 def _(done_tasks, mo):
     task_slider = mo.ui.slider(start=1, stop= len(done_tasks), label="Task", value=1)
-
     return (task_slider,)
 
 
