@@ -11,21 +11,26 @@ def _():
 
 
 @app.cell
-def _(df):
+def _():
     MarginRatio=1.1
     Nr = 141
     Nr_margin=int(Nr*MarginRatio)
-    N_teta = int(df.shape[0]/Nr_margin)
-    Nr, Nr_margin, N_teta
-    return
+    return Nr, Nr_margin
 
 
 @app.cell
 def _():
     import pandas as pd
-    df = pd.read_table('Eflda_141.dat', header=None, names=['X','Y','eflda'], sep='\\s+')
+    df = pd.read_table('tmp/Eflda_141.dat', header=None, names=['X','Y','eflda'], sep='\\s+')
     min_eflda = df['eflda'].max()
     return df, min_eflda
+
+
+@app.cell
+def _(Nr, Nr_margin, df):
+    N_teta = int(df.shape[0]/Nr_margin)
+    Nr, Nr_margin, N_teta
+    return
 
 
 @app.cell
