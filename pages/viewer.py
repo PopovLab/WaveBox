@@ -14,7 +14,7 @@ def _():
 
 @app.cell
 def _(mo):
-    mo.md("""## Power absorbtion v2""")
+    mo.md("""## Race Viewer""")
     return
 
 
@@ -62,8 +62,15 @@ def _(folder_browser, mo):
 @app.function
 def get_done_tasks(path):
     with path.joinpath('done_tasks.txt').open("r") as file:
-            done_tasks = [line.strip() for line in file.readlines()]
-    return done_tasks
+            lines = [line.strip() for line in file.readlines()]
+    done_tasks = []
+    time_tasks = []
+    for line in lines:
+        x = line.split(',')
+        done_tasks.append(x[0])
+        if len(x)>1:
+            time_tasks.append(x[1])
+    return done_tasks, time_tasks
 
 
 @app.cell
@@ -78,7 +85,7 @@ def _(race_table, set_hstate):
     if race_path:
         race_name = race_path.name
         if race_path.joinpath('done_tasks.txt').exists():
-            done_tasks = get_done_tasks(race_path)
+            done_tasks, _ = get_done_tasks(race_path)
             info_text = ", ".join(done_tasks)
             set_hstate('admonition')
         else:
@@ -265,7 +272,7 @@ def _(
             else:
                 pabs_collection.add_scatter(x=df1['psi'], y=df1['Pabs'], name=task1)
 
-            
+
     pabs_collection.update_layout(layout_style)
     if log_checkbox.value:
         pabs_collection.update_yaxes(type="log")
