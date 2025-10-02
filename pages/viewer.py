@@ -234,9 +234,9 @@ def _(log_checkbox, mo, psi_max, psi_min):
 @app.cell
 def _(mo, tasks_collection):
     done_tasks = [tsk['task_name'] for tsk in tasks_collection]
-    tasks = mo.ui.array([mo.ui.checkbox(label=task, value=True) for task in done_tasks], label="Task list")
+    task_checkboxs = mo.ui.array([mo.ui.checkbox(label=task, value=True) for task in done_tasks], label="Task list")
     radio = mo.ui.radio(options=done_tasks, value=done_tasks[0])
-    return done_tasks, radio, tasks
+    return done_tasks, radio, task_checkboxs
 
 
 @app.cell
@@ -259,12 +259,12 @@ def _(
     pd,
     px,
     race_path,
-    tasks,
+    task_checkboxs,
     title,
 ):
     pabs_collection = px.line(title= title, markers=True)
-    for task1, tv in zip(done_tasks, tasks.value):
-        if tv:
+    for task1, check in zip(done_tasks, task_checkboxs.value):
+        if check:
             pabs_psi = race_path.joinpath(task1).joinpath('pabs(psi).dat')
             if not pabs_psi.exists():
                 continue
@@ -284,8 +284,15 @@ def _(
 
 
 @app.cell
-def _(mo, tasks):
-    tasks_stack = mo.hstack([tasks, tasks.value], justify="space-between")
+def _(px, title):
+    col_names = [ 'psi','Sflux', 'dSflux/dpsi', 'dPld/dpsi', 'dPttmp/dpsi', 'dPmix/dpsi', 'dPtot/dpsi']
+    flux_collection = px.line(title= title, markers=True)
+    return
+
+
+@app.cell
+def _(mo, task_checkboxs):
+    tasks_stack = mo.hstack([task_checkboxs, task_checkboxs.value], justify="space-between")
     return
 
 
@@ -369,14 +376,14 @@ def _(
     render_Pabs,
     render_eflda,
     table,
-    tasks,
+    task_checkboxs,
 ):
     mo.ui.tabs({
         "Pabs table": table,
         "Pabs": mo.ui.plotly(px_line),
         "Pabs(psi)": mo.hstack([
             mo.vstack([mo.ui.plotly(pabs_collection), mo.hstack([log_checkbox, dv_norm_checkbox])]),
-            tasks]),
+            task_checkboxs]),
         #'Params': mo.tree({s:dict(params.items(s)) for s in params.sections()}, label='input.par'),
         "Eflda": mo.hstack([ 
             mo.lazy(render_eflda(radio.value)),
