@@ -274,7 +274,6 @@ def _(
             else:
                 pabs_collection.add_scatter(x=df1['psi'], y=df1['Pabs'], name=task1)
 
-
     pabs_collection.update_layout(layout_style)
     if log_checkbox.value:
         pabs_collection.update_yaxes(type="log")
@@ -284,10 +283,45 @@ def _(
 
 
 @app.cell
-def _(px, title):
+def _(mo):
     col_names = [ 'psi','Sflux', 'dSflux/dpsi', 'dPld/dpsi', 'dPttmp/dpsi', 'dPmix/dpsi', 'dPtot/dpsi']
-    flux_collection = px.line(title= title, markers=True)
-    return
+    dropdown = mo.ui.dropdown(
+        options= col_names, value='Sflux', label="choose one"
+    )
+    return (dropdown,)
+
+
+@app.cell
+def _(
+    layout_style,
+    log_checkbox,
+    params,
+    pd,
+    px,
+    race_path,
+    task_checkboxs,
+    tasks_collection,
+    title,
+):
+
+    def flux_plot(name):
+        plot = px.line(title= title, markers=True)
+        for tsk, check in zip(tasks_collection, task_checkboxs.value):
+            if check:
+                task_name = tsk['task_name']
+                file = race_path.joinpath(task_name).joinpath('flux(psi).dat')
+                if not file.exists():
+                    continue
+                df1 = pd.read_table(file, sep='\\s+' )
+                plot.add_scatter(x=df1['psi'], y=df1[name], name=task_name)
+    
+        plot.update_layout(layout_style)
+        if log_checkbox.value:
+            plot.update_yaxes(type="log")
+        plot.update_yaxes(title_text= name)
+        plot.update_xaxes(title_text= params['series']['var']);
+        return plot
+    return (flux_plot,)
 
 
 @app.cell
@@ -366,7 +400,9 @@ def _(mo, params):
 
 @app.cell
 def _(
+    dropdown,
     dv_norm_checkbox,
+    flux_plot,
     log_checkbox,
     mo,
     pabs_collection,
@@ -384,6 +420,9 @@ def _(
         "Pabs(psi)": mo.hstack([
             mo.vstack([mo.ui.plotly(pabs_collection), mo.hstack([log_checkbox, dv_norm_checkbox])]),
             task_checkboxs]),
+        "Flux(psi)": mo.hstack([
+            mo.vstack([mo.ui.plotly(flux_plot(dropdown.value)), mo.hstack([log_checkbox, dropdown])]),
+            task_checkboxs]),    
         #'Params': mo.tree({s:dict(params.items(s)) for s in params.sections()}, label='input.par'),
         "Eflda": mo.hstack([ 
             mo.lazy(render_eflda(radio.value)),
