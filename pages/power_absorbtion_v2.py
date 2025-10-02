@@ -48,8 +48,8 @@ def _(folder_browser, mo):
 
 
 @app.cell
-def _(race_table):
-    race_table.value[0]
+def _():
+    #race_table.value[0]
     return
 
 
@@ -271,18 +271,18 @@ def _(mo, tasks):
 
 
 @app.cell
-def _(mo, pd, race_path, radio, title):
+def _(mo, pd, race_path, title):
     from matplotlib import pyplot as plt
     def render_pabs_axis(task, axis):
         pabs_psi = race_path.joinpath(task).joinpath('pabs(psi).dat')
         df = pd.read_table(pabs_psi, header=None, names=['psi','dV','Pabs', 'PabsLD','PabsTT','PabsMX'], sep='\\s+' )
         return axis.plot(df['psi'], df['Pabs'], label=task)
 
-    def render_Pabs():
+    def render_Pabs(task):
         fig, ax = plt.subplots()
         fig.suptitle(title)
-        if radio.value:
-            render_pabs_axis(radio.value, ax)
+        if task:
+            render_pabs_axis(task, ax)
         ax.legend()
         ax.set_xlabel('psi')
         ax.set_ylabel('Pabs');
@@ -291,25 +291,32 @@ def _(mo, pd, race_path, radio, title):
 
 
 @app.cell
-def _(mo, pd, plt, race_path, radio, title):
-
-    def render_eflda_axis(task, axis):
+def _(mo, pd, plt, race_path, title):
+    from pathlib import Path
+    def render_eflda_axis(task_path, axis):
         cmhot = plt.get_cmap("plasma")
-        Eflda = race_path.joinpath(task).joinpath('Eflda.dat')
+        Eflda = task_path.joinpath('Eflda.dat')
         df = pd.read_table(Eflda, header=None, names=['X','Y','eflda'], sep='\\s+')
-        return axis.tripcolor(df['X'], df['Y'], df['eflda'], cmap="plasma", shading='flat', label=task)
+        return axis.tripcolor(df['X'], df['Y'], df['eflda'], cmap="plasma", shading='flat')
 
-    def render_eflda():
-        fig, ax = plt.subplots()
-        fig.suptitle(title)
-        if radio.value:
-            pcm = render_eflda_axis(radio.value, ax)
+    def render_eflda(task):
+        if not task:
+            return mo.md(text='No selected task')
+        task_path  =  Path(race_path).joinpath(task)
+        eflda_plot = task_path.joinpath('eflda_plot.png')
+        if not Path(eflda_plot).exists():
+            fig, ax = plt.subplots()
+            fig.suptitle(title)
+            pcm = render_eflda_axis(task_path, ax)
             fig.colorbar(pcm, ax=ax, extend='max', label='eflda')
-        #ax.legend()
-        ax.set_aspect('equal')
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y');
-        return mo.as_html(ax)
+            #ax.legend()
+            ax.set_aspect('equal')
+            ax.set_xlabel('X')
+            ax.set_ylabel('Y');
+            # Save the plot to a file
+            fig.savefig(eflda_plot, dpi=300, bbox_inches='tight', transparent=False)
+        #return mo.as_html(ax)
+        return mo.image(src= eflda_plot, alt= 'eflda', width=600,height=450)
     return render_eflda, render_eflda_axis
 
 
@@ -345,10 +352,32 @@ def _(
         "Pabs": mo.ui.plotly(px_line),
         "Pabs(psi)": mo.hstack([mo.vstack([mo.ui.plotly(pabs_collection), log_checkbox]), tasks]),
         #'Params': mo.tree({s:dict(params.items(s)) for s in params.sections()}, label='input.par'),
-        "Eflda": mo.hstack([ mo.lazy(render_eflda, show_loading_indicator=True),mo.lazy(render_Pabs()), radio]),
+        "Eflda": mo.hstack([ 
+            mo.lazy(render_eflda(radio.value)),
+            mo.lazy(render_Pabs(radio.value)), radio]),
         'Params': mo.accordion(prams_ui, multiple=True)
 
     })
+    return
+
+
+@app.cell
+def _(done_tasks, mo):
+    task_slider = mo.ui.slider(start=1, stop= len(done_tasks), label="Task", value=1)
+    def get_task():
+        return done_tasks[task_slider.value-1]
+    return get_task, task_slider
+
+
+@app.cell
+def _(get_task, mo, render_Pabs, render_eflda, task_slider):
+
+    mo.vstack([
+        mo.hstack([task_slider,mo.md(f"Task - {get_task()}")]),
+        mo.hstack([    
+            mo.lazy(render_eflda(get_task())),
+            mo.lazy(render_Pabs(get_task()))])    
+    ])
     return
 
 
