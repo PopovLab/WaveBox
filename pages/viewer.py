@@ -113,13 +113,14 @@ def _(race_path, set_hstate):
             params = configparser.ConfigParser(inline_comment_prefixes=('#',))
             params.read(race_path.joinpath('input.par'))
             inp_text = f"Name: {params['common']['name']}"
+            description_text = params.get('common', 'description', fallback= 'none')
         else:
             inp_text = "**Can't open input.par.**"
             set_hstate('attention')
     else:
             inp_text = "**Can't open input.par.**"
             set_hstate('attention')
-    return configparser, inp_text, params
+    return configparser, description_text, inp_text, params
 
 
 @app.cell
@@ -140,10 +141,19 @@ def _(configparser, race_path, set_hstate):
 
 
 @app.cell
-def _(get_hstate, info_text, inp_text, mo, race_name, sys_text):
+def _(
+    description_text,
+    get_hstate,
+    info_text,
+    inp_text,
+    mo,
+    race_name,
+    sys_text,
+):
     mo.md(
         f"""
     /// {get_hstate()} | Race: {race_name} {inp_text}
+    Description: {description_text} <br>
     Tasks: {info_text} <br>
     {sys_text}
     ///
