@@ -60,17 +60,20 @@ def _(folder_browser, mo):
 
 
 @app.function
-def get_done_tasks(path):
+def read_tasks_collection(path):
     with path.joinpath('done_tasks.txt').open("r") as file:
             lines = [line.strip() for line in file.readlines()]
-    done_tasks = []
-    time_tasks = []
+    tc = []
     for line in lines:
         x = line.split(',')
-        done_tasks.append(x[0])
+        task_name= x[0]
+        item = dict(task_name= task_name)
+        tmp = task_name.split('_')
+        item[tmp[0]] = int(tmp[1]) # iterated var
         if len(x)>1:
-            time_tasks.append(x[1])
-    return done_tasks, time_tasks
+            item['exec_time']= x[1]
+        tc.append(item)
+    return tc
 
 
 @app.cell
@@ -85,17 +88,19 @@ def _(race_table, set_hstate):
     if race_path:
         race_name = race_path.name
         if race_path.joinpath('done_tasks.txt').exists():
-            done_tasks, _ = get_done_tasks(race_path)
-            info_text = ", ".join(done_tasks)
+            tasks_collection = read_tasks_collection(race_path)
+            info_text = ", ".join([x['task_name'] for x in tasks_collection])
             set_hstate('admonition')
         else:
+            tasks_collection = []
             info_text = "done_tasks not exists!"
             set_hstate('attention')
     else:
+        tasks_collection = []
         info_text = '**Select race folder**'  
         race_name = ''
         set_hstate('attention')
-    return done_tasks, info_text, race_name, race_path
+    return info_text, race_name, race_path, tasks_collection
 
 
 @app.cell
@@ -147,6 +152,16 @@ def _(get_hstate, info_text, inp_text, mo, race_name, sys_text):
     return
 
 
+@app.cell
+def _(race_path, tasks_collection):
+    #mo.stop(get_hstate() == 'attention', mo.md("**Submit the form to continue.**"))
+    for task in tasks_collection:
+        pb = read_power_balance(race_path.joinpath(task['task_name']))
+        task.update(pb)
+        #print(pb)
+    return
+
+
 @app.function
 def read_power_balance(path):
     pb = {}
@@ -159,25 +174,11 @@ def read_power_balance(path):
 
 
 @app.cell
-def _(done_tasks, race_path):
-    #mo.stop(get_hstate() == 'attention', mo.md("**Submit the form to continue.**"))
-    tasks_data =[]
-    for task in done_tasks:
-        pb = read_power_balance(race_path.joinpath(task))
-        pb['task'] = task
-        tmp = task.split('_')
-        pb[tmp[0]] = int(tmp[1])
-        tasks_data.append(pb)
-        #print(pb)
-    return (tasks_data,)
-
-
-@app.cell
-def _(mo, tasks_data):
+def _(mo, tasks_collection):
     #mo.stop(get_hstate() == 'attention', mo.md("**Submit the form to continue.**"))
     import pandas as pd
-    df = pd.DataFrame.from_dict(tasks_data)
-    table = mo.ui.table(data=df, selection=None)
+    df = pd.DataFrame.from_dict(tasks_collection)
+    table = mo.ui.table(data=df, selection=None, show_column_summaries= False)
     return df, pd, table
 
 
@@ -231,10 +232,11 @@ def _(log_checkbox, mo, psi_max, psi_min):
 
 
 @app.cell
-def _(done_tasks, mo):
+def _(mo, tasks_collection):
+    done_tasks = [tsk['task_name'] for tsk in tasks_collection]
     tasks = mo.ui.array([mo.ui.checkbox(label=task, value=True) for task in done_tasks], label="Task list")
     radio = mo.ui.radio(options=done_tasks, value=done_tasks[0])
-    return radio, tasks
+    return done_tasks, radio, tasks
 
 
 @app.cell
