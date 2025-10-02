@@ -13,7 +13,7 @@ def _():
 @app.cell
 def _():
     MarginRatio=1.1
-    Nr = 141
+    Nr = 551
     Nr_margin=int(Nr*MarginRatio)
     return Nr, Nr_margin
 
@@ -21,7 +21,7 @@ def _():
 @app.cell
 def _():
     import pandas as pd
-    df = pd.read_table('tmp/Eflda_141.dat', header=None, names=['X','Y','eflda'], sep='\\s+')
+    df = pd.read_table('tmp/Eflda_551.dat', header=None, names=['X','Y','eflda'], sep='\\s+')
     min_eflda = df['eflda'].max()
     return df, min_eflda
 
