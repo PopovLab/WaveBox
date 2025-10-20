@@ -43,8 +43,35 @@ def get_race_list(directory_path):
 @app.cell
 def _(folder_browser, mo):
     race_table = mo.ui.table(data=get_race_list(folder_browser.path(index=0)), pagination=True, show_download = False, selection= 'single')
-    race_table
     return (race_table,)
+
+
+@app.cell
+def _(mo, race_table):
+    import shutil
+    delete_chkbox = mo.ui.checkbox(label='Are you sure?')
+    def delete_race(x):
+        if not delete_chkbox.value: return
+        directory_to_remove = race_table.value[0]['path']
+        if directory_to_remove.exists():
+            print(f'remove {directory_to_remove}')
+            try:
+                # Attempt to remove the directory
+                shutil.rmtree(directory_to_remove)
+                with mo.redirect_stdout():
+                    print(f"Directory '{directory_to_remove}' removed successfully.")
+            except OSError as e:
+                print(f"Error removing directory '{directory_to_remove}': {e}")
+                print("Ensure the directory is empty before attempting to remove it with Path.rmdir().")
+    delete_btn = mo.ui.run_button(label="Delete race data", kind='warn', on_change=delete_race)
+    return delete_btn, delete_chkbox
+
+
+@app.cell
+def _(delete_btn, delete_chkbox, mo, race_table):
+
+    mo.vstack([race_table, mo.hstack([delete_btn, delete_chkbox])])
+    return
 
 
 @app.cell
@@ -59,21 +86,37 @@ def _(folder_browser, mo):
     return
 
 
-@app.function
-def read_tasks_collection(path):
-    with path.joinpath('done_tasks.txt').open("r") as file:
-            lines = [line.strip() for line in file.readlines()]
-    tc = []
-    for line in lines:
-        x = line.split(',')
-        task_name= x[0]
-        item = dict(task_name= task_name)
-        tmp = task_name.split('_')
-        item[tmp[0]] = int(tmp[1]) # iterated var
-        if len(x)>1:
-            item['exec_time']= x[1]
-        tc.append(item)
-    return tc
+@app.cell
+def _(mo):
+    def read_tasks_collection(path):
+        with path.joinpath('done_tasks.txt').open("r") as file:
+                lines = [line.strip() for line in file.readlines()]
+        tc = []
+        for line in lines:
+            x = line.split(',')
+            task_name= x[0]
+            item = dict(task_name= task_name)
+            tmp = task_name.split('_')
+            try:
+                item[tmp[0]] = int(tmp[1]) # iterated var
+            except ValueError as e:
+                with mo.redirect_stdout():
+                    print(f"Caught a ValueError: {e}")
+                item[tmp[0]] = 'ValueError'
+            if len(x)>1:
+                item['exec_time']= x[1]
+            tc.append(item)
+        return tc
+
+    def read_exe_time(path):
+        f = path.joinpath('execution_time.txt')
+        if f.exists():
+            with path.joinpath('execution_time.txt').open("r") as file:
+                line = file.readline()
+        else:
+            line = 'none'
+        return line
+    return read_exe_time, read_tasks_collection
 
 
 @app.cell
@@ -83,24 +126,28 @@ def _(mo):
 
 
 @app.cell
-def _(race_table, set_hstate):
+def _(race_table, read_exe_time, read_tasks_collection, set_hstate):
     race_path = race_table.value[0]['path']
     if race_path:
         race_name = race_path.name
         if race_path.joinpath('done_tasks.txt').exists():
             tasks_collection = read_tasks_collection(race_path)
             info_text = ", ".join([x['task_name'] for x in tasks_collection])
+            exe_time = read_exe_time(race_path)
             set_hstate('admonition')
         else:
             tasks_collection = []
             info_text = "done_tasks not exists!"
+            race_name = ''
+            exe_time = ''
             set_hstate('attention')
     else:
         tasks_collection = []
         info_text = '**Select race folder**'  
         race_name = ''
+        exe_time = ''
         set_hstate('attention')
-    return info_text, race_name, race_path, tasks_collection
+    return exe_time, info_text, race_name, race_path, tasks_collection
 
 
 @app.cell
@@ -143,6 +190,7 @@ def _(configparser, race_path, set_hstate):
 @app.cell
 def _(
     description_text,
+    exe_time,
     get_hstate,
     info_text,
     inp_text,
@@ -154,8 +202,9 @@ def _(
         f"""
     /// {get_hstate()} | Race: {race_name} {inp_text}
     Description: {description_text} <br>
-    Tasks: {info_text} <br>
-    {sys_text}
+    Tasks: {info_text}  <br>
+    {sys_text} <br>
+    Execution time: {exe_time}
     ///
     """
     )
@@ -324,7 +373,7 @@ def _(
                     continue
                 df1 = pd.read_table(file, sep='\\s+' )
                 plot.add_scatter(x=df1['psi'], y=df1[name], name=task_name)
-    
+
         plot.update_layout(layout_style)
         if log_checkbox.value:
             plot.update_yaxes(type="log")
