@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.15.5"
+__generated_with = "0.17.0"
 app = marimo.App(width="medium")
 
 
@@ -437,7 +437,11 @@ def _(mo, pd, plt, race_path, title):
             ax.set_xlabel('X')
             ax.set_ylabel('Y');
             # Save the plot to a file
-            fig.savefig(eflda_plot, dpi=300, bbox_inches='tight', transparent=False)
+            try:
+                fig.savefig(eflda_plot, dpi=300, bbox_inches='tight', transparent=False)
+            except Exception as e:
+                with mo.redirect_stdout():
+                    print(f"Exception: {e}")
         #return mo.as_html(ax)
         return mo.image(src= eflda_plot, alt= 'eflda', width=600,height=500)
     return Path, render_eflda
