@@ -13,12 +13,6 @@ def _():
 
 
 @app.cell
-def _(mo):
-    mo.md("""## Race Viewer""")
-    return
-
-
-@app.cell
 def _():
     import config as cfg
     return (cfg,)
@@ -32,6 +26,17 @@ def _(cfg, mo):
                                         restrict_navigation= True,
                                         multiple= False)
     return (folder_browser,)
+
+
+@app.cell
+def _(folder_browser, mo):
+    mo.md(
+        f"""
+    /// admonition | Folder : {folder_browser.path(index=0)} 
+    ///
+    """
+    )
+    return
 
 
 @app.function
