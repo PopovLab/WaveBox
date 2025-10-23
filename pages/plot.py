@@ -38,9 +38,9 @@ def render_eflda_fig(task_path, title):
     return fig
 
 def make_eflda_pabs_fig(task_path, title):
-    fig, axs = plt.subplots(2,1)
+    fig, axs = plt.subplots(1,2,  figsize=(12, 5))
     fig.suptitle(title)
     pcm = render_eflda_axis(task_path, axs[0])
-    fig.colorbar(pcm, ax=axs[0], extend='max') #, label='eflda'
-
+    fig.colorbar(pcm, ax=axs[0]) #, label='eflda'
+    render_pabs_axis(task_path, axs[1])
     return fig
