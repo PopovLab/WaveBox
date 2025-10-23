@@ -254,11 +254,7 @@ def _():
         xaxis= axis_style,
         yaxis= axis_style,
         plot_bgcolor='white', paper_bgcolor='white',
-        legend=dict(
-            orientation="v",
-            y=1.01,
-            x=1.01
-        ),
+        legend=dict(orientation="v", y=1.01, x=1.01),
         title_font_size=16,
         title_x=0.5 # Center the title
     )
@@ -383,7 +379,7 @@ def _(
         if log_checkbox.value:
             plot.update_yaxes(type="log")
         plot.update_yaxes(title_text= name)
-        plot.update_xaxes(title_text= params['series']['var']);
+        plot.update_xaxes(title_text= params['series']['var'])
         return plot
     return (flux_plot,)
 
@@ -395,60 +391,31 @@ def _(mo, task_checkboxs):
 
 
 @app.cell
-def _(mo, pd, race_path, title):
+def _(mo, race_path, title):
+    import plot as plot
     from matplotlib import pyplot as plt
-    def render_pabs_axis(task, axis):
-        pabs_psi = race_path.joinpath(task).joinpath('pabs(psi).dat')
-        if pabs_psi.exists():
-            df = pd.read_table(pabs_psi, header=None, names=['psi','dV','Pabs', 'PabsLD','PabsTT','PabsMX'], sep='\\s+' )
-            axis.plot(df['psi'], df['Pabs'], label=task)
-
+    plot.race_path = race_path
     def render_Pabs(task):
-        fig, ax = plt.subplots()
-        fig.suptitle(title)
-        if task:
-            render_pabs_axis(task, ax)
-        ax.legend()
-        ax.set_xlabel('psi')
-        ax.set_ylabel('Pabs');
-        return mo.as_html(ax)
-    return plt, render_Pabs
+        return mo.as_html(plot.render_Pabs(task, title))
+    return plot, render_Pabs
 
 
 @app.cell
-def _(mo, pd, plt, race_path, title):
+def _(mo, plot, race_path, title):
     from pathlib import Path
-    def render_eflda_axis(task_path, axis):
-        cmhot = plt.get_cmap("plasma")
-        Eflda = task_path.joinpath('Eflda.dat')
-        if Path(Eflda).exists():
-            df = pd.read_table(Eflda, header=None, names=['X','Y','eflda'], sep='\\s+')
-            return axis.tripcolor(df['X'], df['Y'], df['eflda'], cmap="plasma", shading='flat')
-        else:
-            return axis.tripcolor([1, 1, -1, -1], [1, -1, 1, -1], [0, 1, 2, 3], cmap="plasma", shading='flat')
-
     def render_eflda(task):
         if not task:
             return mo.md(text='No selected task')
-        task_path  =  Path(race_path).joinpath(task)
-        eflda_plot = task_path.joinpath('eflda_plot.png')
-        if not Path(eflda_plot).exists():
-            fig, ax = plt.subplots()
-            fig.suptitle(title)
-            pcm = render_eflda_axis(task_path, ax)
-            fig.colorbar(pcm, ax=ax, extend='max') #, label='eflda'
-            #ax.legend()
-            ax.set_aspect('equal')
-            ax.set_xlabel('X')
-            ax.set_ylabel('Y');
-            # Save the plot to a file
+        task_path  =  Path(race_path).joinpath(task)        
+        eflda_image = task_path.joinpath('eflda_image.png')
+        if not Path(eflda_image).exists():
             try:
-                fig.savefig(eflda_plot, dpi=300, bbox_inches='tight', transparent=False)
+                fig = plot.render_eflda_fig(task_path, title)
+                fig.savefig(eflda_image, dpi=300, bbox_inches='tight', transparent=False)
             except Exception as e:
                 with mo.redirect_stdout():
                     print(f"Exception: {e}")
-        #return mo.as_html(ax)
-        return mo.image(src= eflda_plot, alt= 'eflda', width=600,height=500)
+        return mo.image(src= eflda_image, alt= 'eflda', width=600, height=500)
     return Path, render_eflda
 
 
