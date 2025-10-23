@@ -2,25 +2,22 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from pathlib import Path
 
-race_path = Path()
+def render_pabs_axis(task_path: Path, axis):
+    file = task_path.joinpath('pabs(psi).dat')
+    if file.exists():
+        df = pd.read_table(file, header=None, names=['psi','dV','Pabs', 'PabsLD','PabsTT','PabsMX'], sep='\\s+' )
+        axis.plot(df['psi'], df['Pabs'])
 
-def render_pabs_axis(task, axis):
-    pabs_psi = race_path.joinpath(task).joinpath('pabs(psi).dat')
-    if pabs_psi.exists():
-        df = pd.read_table(pabs_psi, header=None, names=['psi','dV','Pabs', 'PabsLD','PabsTT','PabsMX'], sep='\\s+' )
-        axis.plot(df['psi'], df['Pabs'], label=task)
-
-def render_Pabs(task, title):
+def render_Pabs(task_path: Path, title):
     fig, ax = plt.subplots()
     fig.suptitle(title)
-    if task:
-        render_pabs_axis(task, ax)
-    ax.legend()
+    render_pabs_axis(task_path, ax)
+    #ax.legend()
     ax.set_xlabel('psi')
     ax.set_ylabel('Pabs');
     return ax
 
-def render_eflda_axis(task_path, axis):
+def render_eflda_axis(task_path: Path, axis):
     axis.set_aspect('equal')
     axis.set_xlabel('R(cm)')
     axis.set_ylabel('Y(cm)')
@@ -40,3 +37,10 @@ def render_eflda_fig(task_path, title):
     fig.colorbar(pcm, ax=ax, extend='max') #, label='eflda'
     return fig
 
+def make_eflda_pabs_fig(task_path, title):
+    fig, axs = plt.subplots(2,1)
+    fig.suptitle(title)
+    pcm = render_eflda_axis(task_path, axs[0])
+    fig.colorbar(pcm, ax=axs[0], extend='max') #, label='eflda'
+
+    return fig

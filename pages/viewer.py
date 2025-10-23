@@ -392,31 +392,34 @@ def _(mo, task_checkboxs):
 
 @app.cell
 def _(mo, race_path, title):
+    from pathlib import Path
     import plot as plot
     from matplotlib import pyplot as plt
-    plot.race_path = race_path
     def render_Pabs(task):
-        return mo.as_html(plot.render_Pabs(task, title))
-    return plot, render_Pabs
+        if not task:
+            return mo.md(text='No selected task')
+        task_path = Path(race_path).joinpath(task) 
+        return mo.as_html(plot.render_Pabs(task_path, title))
+    return Path, plot, render_Pabs
 
 
 @app.cell
-def _(mo, plot, race_path, title):
-    from pathlib import Path
+def _(Path, mo, plot, race_path, title):
+
     def render_eflda(task):
         if not task:
             return mo.md(text='No selected task')
         task_path  =  Path(race_path).joinpath(task)        
-        eflda_image = task_path.joinpath('eflda_image.png')
-        if not Path(eflda_image).exists():
+        image = task_path.joinpath('eflda_image.png')
+        if not Path(image).exists():
             try:
                 fig = plot.render_eflda_fig(task_path, title)
-                fig.savefig(eflda_image, dpi=300, bbox_inches='tight', transparent=False)
+                fig.savefig(image, dpi=300, bbox_inches='tight', transparent=False)
             except Exception as e:
                 with mo.redirect_stdout():
                     print(f"Exception: {e}")
-        return mo.image(src= eflda_image, alt= 'eflda', width=600, height=500)
-    return Path, render_eflda
+        return mo.image(src= image, alt= 'eflda', width=600, height=500)
+    return (render_eflda,)
 
 
 @app.cell
