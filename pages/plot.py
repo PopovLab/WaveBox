@@ -21,6 +21,9 @@ def render_Pabs(task, title):
     return ax
 
 def render_eflda_axis(task_path, axis):
+    axis.set_aspect('equal')
+    axis.set_xlabel('R(cm)')
+    axis.set_ylabel('Y(cm)')
     cmhot = plt.get_cmap("plasma")
     Eflda = task_path.joinpath('Eflda.dat')
     if Path(Eflda).exists():
@@ -35,9 +38,5 @@ def render_eflda_fig(task_path, title):
     fig.suptitle(title)
     pcm = render_eflda_axis(task_path, ax)
     fig.colorbar(pcm, ax=ax, extend='max') #, label='eflda'
-    #ax.legend()
-    ax.set_aspect('equal')
-    ax.set_xlabel('R(cm)')
-    ax.set_ylabel('Y(cm)')
-    # Save the plot to a file
     return fig
+
