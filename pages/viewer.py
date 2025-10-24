@@ -403,7 +403,7 @@ def _(mo, plot, race_path, title):
 
 
 @app.cell
-def _(Path, mo, plot, race_path, title):
+def _(Path, mo, plot, race_path):
 
     def render_eflda(task):
         if not task:
@@ -412,17 +412,20 @@ def _(Path, mo, plot, race_path, title):
         image = task_path.joinpath('eflda_image.png')
         if not Path(image).exists():
             try:
-                fig = plot.render_eflda_fig(task_path, title)
+                fig = plot.render_eflda_fig(task_path)
                 fig.savefig(image, dpi=300, bbox_inches='tight', transparent=False)
             except Exception as e:
                 with mo.redirect_stdout():
                     print(f"Exception: {e}")
-        return mo.image(src= image, alt= 'eflda', width=600, height=500)
+        if Path(image).exists():                
+            return mo.image(src= image, alt= 'eflda', width=600, height=500)
+        else:
+            return mo.md(text='No image')    
     return (render_eflda,)
 
 
 @app.cell
-def _(Path, mo, plot, race_path, title):
+def _(Path, mo, plot, race_path):
     def render_eflda_pabs(task):
         if not task:
             return mo.md(text='No selected task')
@@ -430,12 +433,15 @@ def _(Path, mo, plot, race_path, title):
         image = task_path.joinpath('eflda_pabs.png')
         if not Path(image).exists():
             try:
-                fig = plot.make_eflda_pabs_fig(task_path, title)
+                fig = plot.make_eflda_pabs_fig(task_path, ['Nr', 'mmax', 'nphi1'])
                 fig.savefig(image, dpi=300, bbox_inches='tight', transparent=False)
             except Exception as e:
                 with mo.redirect_stdout():
                     print(f"Exception: {e}")
-        return mo.image(src= image, alt= 'eflda pabs', width=1100, height=500)
+        if Path(image).exists():                
+            return mo.image(src= image, alt= 'eflda pabs', width=1100, height=500)
+        else:
+            return mo.md(text='No image')
     return (render_eflda_pabs,)
 
 
