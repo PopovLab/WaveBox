@@ -3,6 +3,9 @@ from matplotlib import pyplot as plt
 from pathlib import Path
 
 def render_pabs_axis(task_path: Path, axis):
+    axis.set_xlabel('psi')
+    axis.set_ylabel('Pabs')
+    #axis.legend()
     file = task_path.joinpath('pabs(psi).dat')
     if file.exists():
         df = pd.read_table(file, header=None, names=['psi','dV','Pabs', 'PabsLD','PabsTT','PabsMX'], sep='\\s+' )
@@ -10,11 +13,8 @@ def render_pabs_axis(task_path: Path, axis):
 
 def render_Pabs(task_path: Path, title):
     fig, ax = plt.subplots()
-    fig.suptitle(title)
+    #fig.suptitle(title)
     render_pabs_axis(task_path, ax)
-    #ax.legend()
-    ax.set_xlabel('psi')
-    ax.set_ylabel('Pabs');
     return ax
 
 def render_eflda_axis(task_path: Path, axis):
@@ -32,9 +32,9 @@ def render_eflda_axis(task_path: Path, axis):
 
 def render_eflda_fig(task_path, title):
     fig, ax = plt.subplots()
-    fig.suptitle(title)
+    #fig.suptitle(title)
     pcm = render_eflda_axis(task_path, ax)
-    fig.colorbar(pcm, ax=ax, extend='max') #, label='eflda'
+    fig.colorbar(pcm, ax=ax) #, label='eflda'
     return fig
 
 def make_eflda_pabs_fig(task_path, title):
@@ -44,3 +44,20 @@ def make_eflda_pabs_fig(task_path, title):
     fig.colorbar(pcm, ax=axs[0]) #, label='eflda'
     render_pabs_axis(task_path, axs[1])
     return fig
+
+def get_param_value(params, name):
+    if name in params['w2grid']:
+        return f"{name}={params['w2grid'][name]}"
+    else:
+        return f"There is no {name}"
+    
+def get_title(params, vars_list= None):
+    title = [params['common']['name']]
+    if vars_list:
+        for var_name in vars_list:
+            title.append(get_param_value(params, var_name))
+    else:
+        var_name = params['series']['var']
+        title.append(get_param_value(params, var_name))
+        
+    return " ".join(title)

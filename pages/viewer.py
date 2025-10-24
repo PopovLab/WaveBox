@@ -8,8 +8,9 @@ app = marimo.App(width="medium")
 def _():
     import marimo as mo
     import ui_elements
+    import plot as plot
     ui_elements.nav_menu()
-    return (mo,)
+    return mo, plot
 
 
 @app.cell
@@ -300,12 +301,10 @@ def _(mo, tasks_collection):
 
 
 @app.cell
-def _(params):
+def _(params, plot):
     #mo.stop(get_hstate() == 'attention', mo.md("**Submit the form to continue.**"))
-    if params['series']['var'] == 'Nr':
-        title = params['common']['name'] + ' Mmax=' + params['w2grid']['Mmax']
-    else:
-        title = params['common']['name'] +' Nr=' + params['w2grid']['Nr'] 
+    title = plot.get_title(params,['Nr', 'mmax', 'nphi1'])
+    title
     return (title,)
 
 
@@ -391,16 +390,16 @@ def _(mo, task_checkboxs):
 
 
 @app.cell
-def _(mo, race_path, title):
+def _(mo, plot, race_path, title):
     from pathlib import Path
-    import plot as plot
+
     from matplotlib import pyplot as plt
     def render_Pabs(task):
         if not task:
             return mo.md(text='No selected task')
         task_path = Path(race_path).joinpath(task) 
         return mo.as_html(plot.render_Pabs(task_path, title))
-    return Path, plot, render_Pabs
+    return Path, render_Pabs
 
 
 @app.cell
