@@ -122,7 +122,7 @@ def _(mo):
         else:
             line = 'none'
         return line
-    return read_exe_time, read_tasks_collection
+    return
 
 
 @app.cell
@@ -132,34 +132,26 @@ def _(mo):
 
 
 @app.cell
-def _(race_table, read_exe_time, read_tasks_collection, set_hstate):
-    race_path = race_table.value[0]['path']
-    if race_path:
-        race_name = race_path.name
-        if race_path.joinpath('done_tasks.txt').exists():
-            tasks_collection = read_tasks_collection(race_path)
-            info_text = ", ".join([x['task_name'] for x in tasks_collection])
-            exe_time = read_exe_time(race_path)
-            set_hstate('admonition')
-        else:
-            tasks_collection = []
-            info_text = "done_tasks not exists!"
-            race_name = ''
-            exe_time = ''
-            set_hstate('attention')
+def _(race_table, set_hstate):
+    from race import Race
+    race= Race(race_table.value[0]['path'])
+
+
+    info_text = race.info_text
+    exe_time = race.exe_time
+    if race.is_good:
+        set_hstate('admonition')  
     else:
-        tasks_collection = []
-        info_text = '**Select race folder**'  
-        race_name = ''
-        exe_time = ''
         set_hstate('attention')
-    return exe_time, info_text, race_name, race_path, tasks_collection
+
+    return exe_time, info_text, race
 
 
 @app.cell
-def _(race_path, set_hstate):
+def _(race, set_hstate):
     import configparser
     check_param= False
+    race_path = race.result_path
     if race_path:
         if race_path.joinpath('input.par').exists():
             check_param= True
@@ -173,7 +165,7 @@ def _(race_path, set_hstate):
     else:
             inp_text = "**Can't open input.par.**"
             set_hstate('attention')
-    return configparser, description_text, inp_text, params
+    return configparser, description_text, inp_text, params, race_path
 
 
 @app.cell
@@ -201,12 +193,12 @@ def _(
     info_text,
     inp_text,
     mo,
-    race_name,
+    race,
     sys_text,
 ):
     mo.md(
         f"""
-    /// {get_hstate()} | Race: {race_name} {inp_text}
+    /// {get_hstate()} | Race: {race.name} {inp_text}
     Description: {description_text} <br>
     Tasks: {info_text}  <br>
     {sys_text} <br>
@@ -218,9 +210,9 @@ def _(
 
 
 @app.cell
-def _(race_path, tasks_collection):
+def _(race, race_path):
     #mo.stop(get_hstate() == 'attention', mo.md("**Submit the form to continue.**"))
-    for task in tasks_collection:
+    for task in race.tasks_collection:
         pb = read_power_balance(race_path.joinpath(task['task_name']))
         task.update(pb)
         #print(pb)
@@ -239,10 +231,10 @@ def read_power_balance(path):
 
 
 @app.cell
-def _(mo, tasks_collection):
+def _(mo, race):
     #mo.stop(get_hstate() == 'attention', mo.md("**Submit the form to continue.**"))
     import pandas as pd
-    df = pd.DataFrame.from_dict(tasks_collection)
+    df = pd.DataFrame.from_dict(race.tasks_collection)
     table = mo.ui.table(data=df, selection=None, show_column_summaries= False)
     return df, pd, table
 
@@ -293,8 +285,8 @@ def _(log_checkbox, mo, psi_max, psi_min):
 
 
 @app.cell
-def _(mo, tasks_collection):
-    done_tasks = [tsk['task_name'] for tsk in tasks_collection]
+def _(mo, race):
+    done_tasks = [tsk['task_name'] for tsk in race.tasks_collection]
     task_checkboxs = mo.ui.array([mo.ui.checkbox(label=task, value=True) for task in done_tasks], label="Task list")
     radio = mo.ui.radio(options=done_tasks, value=done_tasks[0])
     return done_tasks, radio, task_checkboxs
@@ -357,15 +349,15 @@ def _(
     params,
     pd,
     px,
+    race,
     race_path,
     task_checkboxs,
-    tasks_collection,
     title,
 ):
 
     def flux_plot(name):
         plot = px.line(title= title, markers=True)
-        for tsk, check in zip(tasks_collection, task_checkboxs.value):
+        for tsk, check in zip(race.tasks_collection, task_checkboxs.value):
             if check:
                 task_name = tsk['task_name']
                 file = race_path.joinpath(task_name).joinpath('flux(psi).dat')
