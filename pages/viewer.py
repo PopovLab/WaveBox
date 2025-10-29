@@ -103,15 +103,12 @@ def _(race_table, set_hstate):
     from race import Race
     race= Race(race_table.value[0]['path'])
 
-
-    info_text = race.info_text
-    exe_time = race.exe_time
     if race.is_good:
         set_hstate('admonition')  
     else:
         set_hstate('attention')
 
-    return exe_time, info_text, race
+    return (race,)
 
 
 @app.cell
@@ -153,23 +150,14 @@ def _(configparser, race_path, set_hstate):
 
 
 @app.cell
-def _(
-    description_text,
-    exe_time,
-    get_hstate,
-    info_text,
-    inp_text,
-    mo,
-    race,
-    sys_text,
-):
+def _(description_text, get_hstate, inp_text, mo, race, sys_text):
     mo.md(
         f"""
     /// {get_hstate()} | Race: {race.name} {inp_text}
     Description: {description_text} <br>
-    Tasks: {info_text}  <br>
+    Tasks: {race.info_text}  <br>
     {sys_text} <br>
-    Execution time: {exe_time}
+    Execution time: {race.exe_time}
     ///
     """
     )
