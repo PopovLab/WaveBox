@@ -83,6 +83,6 @@ def get_title(params, vars_list= None):
 if __name__ == "__main__":
     task_path= Path("D:\\PopovLab\\Program_wave2D\\Results\\T-15\\2025-09-26_12-54-03\\Nr_271")
     params = f90nml.read(task_path.joinpath('input.nml'))
-    print(params['common']['name'])
+    #print(params['common']['name'])
     print(params['w2grid'])
     print(get_title(params,  ['Nr', 'mmax', 'nphi1']))

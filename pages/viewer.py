@@ -218,7 +218,7 @@ def _(mo, race):
 def _(race):
     #mo.stop(get_hstate() == 'attention', mo.md("**Submit the form to continue.**"))
     #title = plot.get_title(race.params,['Nr', 'mmax', 'nphi1'])
-    title = race.get_plot_title(['Nr', 'mmax', 'nphi1'])
+    title = race.get_plot_title(['Nr', 'Mmax', 'nphi1'])
     title
     return (title,)
 
@@ -328,19 +328,11 @@ def _(Path, mo, plot, race):
 
 
 @app.cell
-def _(Path, mo, plot, race):
+def _(Path, mo, race):
     def render_eflda_pabs(task):
         if not task:
             return mo.md(text='No selected task')
-        task_path  =  race.result_path.joinpath(task)        
-        image = task_path.joinpath('eflda_pabs.png')
-        if not Path(image).exists():
-            try:
-                fig = plot.make_eflda_pabs_fig(task_path, ['Nr', 'mmax', 'nphi1'])
-                fig.savefig(image, dpi=300, bbox_inches='tight', transparent=False)
-            except Exception as e:
-                with mo.redirect_stdout():
-                    print(f"Exception: {e}")
+        image = race.get_eflda_pabs_image(task)
         if Path(image).exists():                
             return mo.image(src= image, alt= 'eflda pabs', width=1100, height=500)
         else:
@@ -426,11 +418,11 @@ def _(mo, race, render_eflda_pabs, task_slider):
 
 
 @app.cell
-def _(Path, done_tasks, e, mo, race_path):
+def _(e, mo, race):
     def clear_image_cach(x):
         print(x)
-        for task in done_tasks:
-            task_path  =  Path(race_path).joinpath(task)
+        for task in race.done_tasks:
+            task_path  =  race.result_path.joinpath(task)
             for f in task_path.glob('*.png'):
                 try:
                     f.unlink()

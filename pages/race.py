@@ -1,6 +1,7 @@
 from pathlib import Path
 import configparser
 import tomllib
+import plot
 class Race:
     """Непосредственно сам заезд-расчет"""
 
@@ -112,3 +113,14 @@ class Race:
             title.append(self.get_value(var_name))
             
         return " ".join(title)        
+    
+    def get_eflda_pabs_image(self, task):
+        task_path  =  self.result_path.joinpath(task)        
+        image = task_path.joinpath('eflda_pabs.png')
+        if not Path(image).exists():
+            try:
+                fig = plot.make_eflda_pabs_fig(task_path, ['Nr', 'Mmax', 'nphi1'])
+                fig.savefig(image, dpi=300, bbox_inches='tight', transparent=False)
+            except Exception as e:
+                print(f"Exception: {e}")
+        return image
