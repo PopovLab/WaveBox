@@ -1,4 +1,5 @@
 from pathlib import Path
+import configparser
 class Race:
     """Непосредственно сам заезд-расчет"""
 
@@ -19,7 +20,28 @@ class Race:
                 self.info_text = "done_tasks not exists!"
         else:
             self.info_text = '**Select race folder**'  
+        self.read_input_file()
 
+    def read_input_file(self):
+        file = self.result_path / 'input.toml'
+        if file.exists():
+            self.title = "**input.toml**"    
+            self.description = " input.toml "      
+        else:
+            self.read_ini_params(self.result_path / 'input.par')
+
+
+
+    def read_ini_params(self, file: Path):
+        if file.exists():
+            self.params = configparser.ConfigParser(inline_comment_prefixes=('#',))
+            self.params.read(file)
+            self.title = f"Name: {self.params['common']['name']}"
+            self.description = self.params.get('common', 'description', fallback= 'none')
+        else:
+            self.title = "**Can't open input.par.**"    
+            self.description = ""        
+            self.is_good = False
 
     def read_tasks_collection(self):
         with self.result_path.joinpath('done_tasks.txt').open("r") as file:

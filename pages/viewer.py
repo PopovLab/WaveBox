@@ -107,29 +107,15 @@ def _(race_table, set_hstate):
         set_hstate('admonition')  
     else:
         set_hstate('attention')
-
     return (race,)
 
 
 @app.cell
-def _(race, set_hstate):
+def _(race):
     import configparser
-    check_param= False
     race_path = race.result_path
-    if race_path:
-        if race_path.joinpath('input.par').exists():
-            check_param= True
-            params = configparser.ConfigParser(inline_comment_prefixes=('#',))
-            params.read(race_path.joinpath('input.par'))
-            inp_text = f"Name: {params['common']['name']}"
-            description_text = params.get('common', 'description', fallback= 'none')
-        else:
-            inp_text = "**Can't open input.par.**"
-            set_hstate('attention')
-    else:
-            inp_text = "**Can't open input.par.**"
-            set_hstate('attention')
-    return configparser, description_text, inp_text, params, race_path
+
+    return configparser, race_path
 
 
 @app.cell
@@ -150,11 +136,11 @@ def _(configparser, race_path, set_hstate):
 
 
 @app.cell
-def _(description_text, get_hstate, inp_text, mo, race, sys_text):
+def _(get_hstate, mo, race, sys_text):
     mo.md(
         f"""
-    /// {get_hstate()} | Race: {race.name} {inp_text}
-    Description: {description_text} <br>
+    /// {get_hstate()} | Race: {race.name} {race.title}
+    Description: {race.description} <br>
     Tasks: {race.info_text}  <br>
     {sys_text} <br>
     Execution time: {race.exe_time}
@@ -210,12 +196,12 @@ def _():
 
 
 @app.cell
-def _(df, layout_style, params):
+def _(df, layout_style, race):
     import plotly.express as px
-    px_line = px.line(x=df[params['series']['var']], y=df['Pabs(kW)'], title="Pabs(kW)", markers=True)
+    px_line = px.line(x=df[race.params['series']['var']], y=df['Pabs(kW)'], title="Pabs(kW)", markers=True)
     px_line.update_layout(layout_style)
     px_line.update_yaxes(title_text='Pabs(kW)')
-    px_line.update_xaxes(title_text= params['series']['var']);
+    px_line.update_xaxes(title_text= race.params['series']['var']);
     return px, px_line
 
 
@@ -248,9 +234,9 @@ def _(mo, race):
 
 
 @app.cell
-def _(params, plot):
+def _(plot, race):
     #mo.stop(get_hstate() == 'attention', mo.md("**Submit the form to continue.**"))
-    title = plot.get_title(params,['Nr', 'mmax', 'nphi1'])
+    title = plot.get_title(race.params,['Nr', 'mmax', 'nphi1'])
     title
     return (title,)
 
@@ -261,9 +247,9 @@ def _(
     dv_norm_checkbox,
     layout_style,
     log_checkbox,
-    params,
     pd,
     px,
+    race,
     race_path,
     task_checkboxs,
     title,
@@ -284,7 +270,7 @@ def _(
     if log_checkbox.value:
         pabs_collection.update_yaxes(type="log")
     pabs_collection.update_yaxes(title_text='Pabs(kW)')
-    pabs_collection.update_xaxes(title_text= params['series']['var']);
+    pabs_collection.update_xaxes(title_text= race.params['series']['var']);
     return (pabs_collection,)
 
 
@@ -301,7 +287,6 @@ def _(mo):
 def _(
     layout_style,
     log_checkbox,
-    params,
     pd,
     px,
     race,
@@ -325,7 +310,7 @@ def _(
         if log_checkbox.value:
             plot.update_yaxes(type="log")
         plot.update_yaxes(title_text= name)
-        plot.update_xaxes(title_text= params['series']['var'])
+        plot.update_xaxes(title_text= race.params['series']['var'])
         return plot
     return (flux_plot,)
 
@@ -393,7 +378,7 @@ def _(Path, mo, plot, race_path):
 
 
 @app.cell
-def _(mo, params):
+def _(mo, race):
     def create_view_item(item):
         return mo.md(f">{item[0]} = {item[1]}")
 
@@ -402,7 +387,7 @@ def _(mo, params):
         return mo.md('>'+'<br>'.join(text))
 
     #prams_ui ={f"**{s}**": mo.vstack([create_view_item(i) for i in params.items(s)]) for s in params.sections()}
-    prams_ui ={f"**{s}**": create_view_section(params.items(s)) for s in params.sections()}
+    prams_ui ={f"**{s}**": create_view_section(race.params.items(s)) for s in race.params.sections()}
     return (prams_ui,)
 
 
