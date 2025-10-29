@@ -328,19 +328,6 @@ def _(Path, mo, plot, race):
 
 
 @app.cell
-def _(Path, mo, race):
-    def render_eflda_pabs(task):
-        if not task:
-            return mo.md(text='No selected task')
-        image = race.get_eflda_pabs_image(task)
-        if Path(image).exists():                
-            return mo.image(src= image, alt= 'eflda pabs', width=1100, height=500)
-        else:
-            return mo.md(text='No image')
-    return (render_eflda_pabs,)
-
-
-@app.cell
 def _(mo, race):
     def create_view_item(item):
         return mo.md(f">{item[0]} = {item[1]}")
@@ -393,6 +380,19 @@ def _(
 
     })
     return
+
+
+@app.cell
+def _(Path, mo, race):
+    def render_eflda_pabs(task):
+        if not task:
+            return mo.md(text='No selected task')
+        image = race.get_eflda_pabs_image(task)
+        if Path(image).exists():                
+            return mo.image(src= image, alt= 'eflda pabs', width=1100, height=500)
+        else:
+            return mo.md(text='No image')
+    return (render_eflda_pabs,)
 
 
 @app.cell
