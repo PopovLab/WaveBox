@@ -93,6 +93,12 @@ def _(folder_browser, mo):
 
 
 @app.cell
+def _(mo, race_table):
+    mo.stop((len(race_table.value) == 0) , mo.md("**Select Race Data.**"))
+    return
+
+
+@app.cell
 def _(mo):
     get_hstate, set_hstate = mo.state('admonition')
     return get_hstate, set_hstate
@@ -131,7 +137,7 @@ def _(race):
     for task in race.tasks_collection:
         pb = read_power_balance(race.result_path.joinpath(task['task_name']))
         task.update(pb)
-        print(pb)
+        #print(pb)
     return
 
 
@@ -209,9 +215,10 @@ def _(mo, race):
 
 
 @app.cell
-def _(plot, race):
+def _(race):
     #mo.stop(get_hstate() == 'attention', mo.md("**Submit the form to continue.**"))
-    title = plot.get_title(race.params,['Nr', 'mmax', 'nphi1'])
+    #title = plot.get_title(race.params,['Nr', 'mmax', 'nphi1'])
+    title = race.get_plot_title(['Nr', 'mmax', 'nphi1'])
     title
     return (title,)
 

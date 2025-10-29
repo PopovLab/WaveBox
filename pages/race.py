@@ -1,5 +1,6 @@
 from pathlib import Path
 import configparser
+import tomllib
 class Race:
     """Непосредственно сам заезд-расчет"""
 
@@ -37,8 +38,10 @@ class Race:
     def read_input_file(self):
         file = self.result_path / 'input.toml'
         if file.exists():
-            self.title = "**input.toml**"    
-            self.description = " input.toml "      
+            with open(file, "rb") as f:
+                self.params = tomllib.load(f)
+            self.title = f"Name: {self.params['work']['name']}"
+            self.description = self.params['work']['description'] 
         else:
             self.read_ini_params(self.result_path / 'input.par')
 
@@ -81,3 +84,30 @@ class Race:
         else:
             line = 'none'
         self.exe_time = line
+
+
+    def get_value(self, name):
+        if 'w2grid' in self.params:
+            if name in self.params['w2grid']:
+                return f"{name}={self.params['w2grid'][name]}"
+            else:
+                return f"There is no {name}"
+        else:
+            return f"There is no w2grid"
+
+    def get_plot_title(self, vars_list= None):
+        if 'work' in self.params:
+            name = self.params['work']['name']
+        else:
+            name = self.params['common']['name']
+        #if type(name) is list: # fix for nml name = ['FT', -15]
+        #    name = "".join([str(n) for n in name])
+        title = [name]
+        if vars_list:
+            for var_name in vars_list:
+                title.append(self.get_value(var_name))
+        else:
+            var_name = self.params['series']['var']
+            title.append(self.get_value(var_name))
+            
+        return " ".join(title)        
