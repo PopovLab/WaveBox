@@ -18,9 +18,10 @@ class Race:
                 self.is_good = True
             else:
                 self.info_text = "done_tasks not exists!"
+            self.read_input_file()                
         else:
             self.info_text = '**Select race folder**'  
-        self.read_input_file()
+
 
     def read_input_file(self):
         file = self.result_path / 'input.toml'
