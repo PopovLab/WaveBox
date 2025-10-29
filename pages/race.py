@@ -19,9 +19,20 @@ class Race:
             else:
                 self.info_text = "done_tasks not exists!"
             self.read_input_file()                
+            self.read_system_info()
         else:
             self.info_text = '**Select race folder**'  
 
+    def read_system_info(self):
+        file = self.result_path / 'system_info.ini'
+        if file.exists():
+            sys_info = configparser.ConfigParser(inline_comment_prefixes=('#',))
+            sys_info.read(file)
+            si = sys_info['system_info']
+            self.sys_info = f"Host: {si['host']} OS: {si['system']}<br>CPU: {si['processor']}"
+        else:
+            self.sys_info = "**Can't system_info.ini.**"    
+            self.is_good = False
 
     def read_input_file(self):
         file = self.result_path / 'input.toml'

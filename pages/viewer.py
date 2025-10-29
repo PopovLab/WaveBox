@@ -112,37 +112,18 @@ def _(race_table, set_hstate):
 
 @app.cell
 def _(race):
-    import configparser
     race_path = race.result_path
-
-    return configparser, race_path
-
-
-@app.cell
-def _(configparser, race_path, set_hstate):
-    if race_path:
-        if race_path.joinpath('system_info.ini').exists():
-            sys_info = configparser.ConfigParser(inline_comment_prefixes=('#',))
-            sys_info.read(race_path.joinpath('system_info.ini'))
-            si = sys_info['system_info']
-            sys_text = f"Host: {si['host']} OS: {si['system']}<br>CPU: {si['processor']}"
-        else:
-            sys_text = "**Can't system_info.ini.**"    
-            set_hstate('attention')
-    else:
-        sys_text = "**Can't system_info.ini.**"
-        set_hstate('attention')
-    return (sys_text,)
+    return (race_path,)
 
 
 @app.cell
-def _(get_hstate, mo, race, sys_text):
+def _(get_hstate, mo, race):
     mo.md(
         f"""
     /// {get_hstate()} | Race: {race.name} {race.title}
     Description: {race.description} <br>
     Tasks: {race.info_text}  <br>
-    {sys_text} <br>
+    {race.sys_info} <br>
     Execution time: {race.exe_time}
     ///
     """
@@ -156,7 +137,7 @@ def _(race, race_path):
     for task in race.tasks_collection:
         pb = read_power_balance(race_path.joinpath(task['task_name']))
         task.update(pb)
-        #print(pb)
+        print(pb)
     return
 
 
