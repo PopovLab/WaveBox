@@ -94,39 +94,6 @@ def _(folder_browser, mo):
 
 @app.cell
 def _(mo):
-    def read_tasks_collection(path):
-        with path.joinpath('done_tasks.txt').open("r") as file:
-                lines = [line.strip() for line in file.readlines()]
-        tc = []
-        for line in lines:
-            x = line.split(',')
-            task_name= x[0]
-            item = dict(task_name= task_name)
-            tmp = task_name.split('_')
-            try:
-                item[tmp[0]] = int(tmp[1]) # iterated var
-            except ValueError as e:
-                with mo.redirect_stdout():
-                    print(f"Caught a ValueError: {e}")
-                item[tmp[0]] = 'ValueError'
-            if len(x)>1:
-                item['exec_time']= x[1]
-            tc.append(item)
-        return tc
-
-    def read_exe_time(path):
-        f = path.joinpath('execution_time.txt')
-        if f.exists():
-            with path.joinpath('execution_time.txt').open("r") as file:
-                line = file.readline()
-        else:
-            line = 'none'
-        return line
-    return
-
-
-@app.cell
-def _(mo):
     get_hstate, set_hstate = mo.state('admonition')
     return get_hstate, set_hstate
 
