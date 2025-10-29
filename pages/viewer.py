@@ -111,12 +111,6 @@ def _(race_table, set_hstate):
 
 
 @app.cell
-def _(race):
-    race_path = race.result_path
-    return (race_path,)
-
-
-@app.cell
 def _(get_hstate, mo, race):
     mo.md(
         f"""
@@ -132,10 +126,10 @@ def _(get_hstate, mo, race):
 
 
 @app.cell
-def _(race, race_path):
+def _(race):
     #mo.stop(get_hstate() == 'attention', mo.md("**Submit the form to continue.**"))
     for task in race.tasks_collection:
-        pb = read_power_balance(race_path.joinpath(task['task_name']))
+        pb = read_power_balance(race.result_path.joinpath(task['task_name']))
         task.update(pb)
         print(pb)
     return
@@ -231,14 +225,13 @@ def _(
     pd,
     px,
     race,
-    race_path,
     task_checkboxs,
     title,
 ):
     pabs_collection = px.line(title= title, markers=True)
     for task1, check in zip(done_tasks, task_checkboxs.value):
         if check:
-            pabs_psi = race_path.joinpath(task1).joinpath('pabs(psi).dat')
+            pabs_psi = race.result_path.joinpath(task1).joinpath('pabs(psi).dat')
             if not pabs_psi.exists():
                 continue
             df1 = pd.read_table(pabs_psi, header=None, names=['psi','dV','Pabs', 'PabsLD','PabsTT','PabsMX'], sep='\\s+' )
@@ -265,23 +258,14 @@ def _(mo):
 
 
 @app.cell
-def _(
-    layout_style,
-    log_checkbox,
-    pd,
-    px,
-    race,
-    race_path,
-    task_checkboxs,
-    title,
-):
+def _(layout_style, log_checkbox, pd, px, race, task_checkboxs, title):
 
     def flux_plot(name):
         plot = px.line(title= title, markers=True)
         for tsk, check in zip(race.tasks_collection, task_checkboxs.value):
             if check:
                 task_name = tsk['task_name']
-                file = race_path.joinpath(task_name).joinpath('flux(psi).dat')
+                file = race.result_path.joinpath(task_name).joinpath('flux(psi).dat')
                 if not file.exists():
                     continue
                 df1 = pd.read_table(file, sep='\\s+' )
@@ -303,25 +287,25 @@ def _(mo, task_checkboxs):
 
 
 @app.cell
-def _(mo, plot, race_path, title):
+def _(mo, plot, race, title):
     from pathlib import Path
 
     from matplotlib import pyplot as plt
     def render_Pabs(task):
         if not task:
             return mo.md(text='No selected task')
-        task_path = Path(race_path).joinpath(task) 
+        task_path = race.result_path.joinpath(task) 
         return mo.as_html(plot.render_Pabs(task_path, title))
     return Path, render_Pabs
 
 
 @app.cell
-def _(Path, mo, plot, race_path):
+def _(Path, mo, plot, race):
 
     def render_eflda(task):
         if not task:
             return mo.md(text='No selected task')
-        task_path  =  Path(race_path).joinpath(task)        
+        task_path  =  race.result_path.joinpath(task)        
         image = task_path.joinpath('eflda_image.png')
         if not Path(image).exists():
             try:
@@ -338,11 +322,11 @@ def _(Path, mo, plot, race_path):
 
 
 @app.cell
-def _(Path, mo, plot, race_path):
+def _(Path, mo, plot, race):
     def render_eflda_pabs(task):
         if not task:
             return mo.md(text='No selected task')
-        task_path  =  Path(race_path).joinpath(task)        
+        task_path  =  race.result_path.joinpath(task)        
         image = task_path.joinpath('eflda_pabs.png')
         if not Path(image).exists():
             try:
