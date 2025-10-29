@@ -75,6 +75,7 @@ class Race:
             if len(x)>1:
                 item['exec_time']= x[1]
             self.tasks_collection.append(item)
+            self.done_tasks = [tsk['task_name'] for tsk in self.tasks_collection]
 
     def read_exe_time(self):
         f = self.result_path.joinpath('execution_time.txt')

@@ -208,10 +208,10 @@ def _(log_checkbox, mo, psi_max, psi_min):
 
 @app.cell
 def _(mo, race):
-    done_tasks = [tsk['task_name'] for tsk in race.tasks_collection]
-    task_checkboxs = mo.ui.array([mo.ui.checkbox(label=task, value=True) for task in done_tasks], label="Task list")
-    radio = mo.ui.radio(options=done_tasks, value=done_tasks[0])
-    return done_tasks, radio, task_checkboxs
+
+    task_checkboxs = mo.ui.array([mo.ui.checkbox(label=task, value=True) for task in race.done_tasks], label="Task list")
+    radio = mo.ui.radio(options=race.done_tasks, value=race.done_tasks[0])
+    return radio, task_checkboxs
 
 
 @app.cell
@@ -225,7 +225,6 @@ def _(race):
 
 @app.cell
 def _(
-    done_tasks,
     dv_norm_checkbox,
     layout_style,
     log_checkbox,
@@ -236,7 +235,7 @@ def _(
     title,
 ):
     pabs_collection = px.line(title= title, markers=True)
-    for task1, check in zip(done_tasks, task_checkboxs.value):
+    for task1, check in zip(race.done_tasks, task_checkboxs.value):
         if check:
             pabs_psi = race.result_path.joinpath(task1).joinpath('pabs(psi).dat')
             if not pabs_psi.exists():
@@ -357,10 +356,16 @@ def _(mo, race):
     def create_view_section(section):
         text = [f" {i[0]} = {i[1]}" for i in section]
         return mo.md('>'+'<br>'.join(text))
-
+    def create_view_section2(section):
+        text = [f" {key} = {value}"  for key, value in section.items()]
+        return mo.md('>'+'<br>'.join(text))    
+    import configparser
     #prams_ui ={f"**{s}**": mo.vstack([create_view_item(i) for i in params.items(s)]) for s in params.sections()}
-    prams_ui ={f"**{s}**": create_view_section(race.params.items(s)) for s in race.params.sections()}
-    return (prams_ui,)
+    if type(race.params) is configparser.ConfigParser:
+        params_ui ={f"**{s}**": create_view_section(race.params.items(s)) for s in race.params.sections()}
+    else:
+        params_ui ={f"**{key}**": create_view_section2(value) for key, value in race.params.items()}
+    return (params_ui,)
 
 
 @app.cell
@@ -371,7 +376,7 @@ def _(
     log_checkbox,
     mo,
     pabs_collection,
-    prams_ui,
+    params_ui,
     px_line,
     radio,
     render_Pabs,
@@ -392,15 +397,15 @@ def _(
         "Eflda": mo.hstack([ 
             mo.lazy(render_eflda(radio.value)),
             mo.lazy(render_Pabs(radio.value)), radio]),
-        'Params': mo.accordion(prams_ui, multiple=True)
+        'Params': mo.accordion(params_ui, multiple=True)
 
     })
     return
 
 
 @app.cell
-def _(done_tasks, mo):
-    task_slider = mo.ui.slider(start=1, stop= len(done_tasks), label="Task", value=1)
+def _(mo, race):
+    task_slider = mo.ui.slider(start=1, stop= len(race.done_tasks), label="Task", value=1)
     return (task_slider,)
 
 
@@ -410,9 +415,9 @@ def _():
 
 
 @app.cell
-def _(done_tasks, mo, render_eflda_pabs, task_slider):
+def _(mo, race, render_eflda_pabs, task_slider):
     def get_task():
-        return done_tasks[task_slider.value-1]
+        return race.done_tasks[task_slider.value-1]
     mo.vstack([
         mo.hstack([task_slider,mo.md(f"Task - {get_task()}")]),
         mo.lazy(render_eflda_pabs(get_task()),show_loading_indicator=True),
