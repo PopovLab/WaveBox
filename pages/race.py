@@ -68,7 +68,7 @@ class Race:
             item = dict(task_name= task_name)
             tmp = task_name.split('_')
             try:
-                item[tmp[0]] = int(tmp[1]) # iterated var
+                item[tmp[0]] = tmp[1] # iterated var
             except ValueError as e:
                 with mo.redirect_stdout():
                     print(f"Caught a ValueError: {e}")
