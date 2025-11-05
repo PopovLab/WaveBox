@@ -66,7 +66,7 @@ def get_param_value(params, name):
         return f"There is no w2grid"
     
 def get_title(params, vars_list= None):
-    if 'work' is params:
+    if 'work' in params:
         name = params['work']['name']
     else:
         name = params['common']['name']
@@ -84,7 +84,8 @@ def get_title(params, vars_list= None):
 
 
 if __name__ == "__main__":
-    task_path= Path("D:\\PopovLab\\Program_wave2D\\Results\\T-15\\2025-09-26_12-54-03\\Nr_271")
+    #task_path= Path("D:\\PopovLab\\Program_wave2D\\Results\\T-15\\2025-09-26_12-54-03\\Nr_271")
+    task_path= Path("D:\\PopovLab\\Program_wave2D\\Results\\FT-2_LH_freq\\2025-11-01_22-59-08\\freq_0.90000")
     params = f90nml.read(task_path.joinpath('input.nml'))
     print(params)
     print(params['w2grid'])
