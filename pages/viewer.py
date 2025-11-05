@@ -249,8 +249,8 @@ def _(
     pabs_collection.update_layout(layout_style)
     if log_checkbox.value:
         pabs_collection.update_yaxes(type="log")
-    pabs_collection.update_yaxes(title_text='Pabs(kW)')
-    pabs_collection.update_xaxes(title_text= race.params['series']['var']);
+    pabs_collection.update_yaxes(title_text= 'Pabs(kW)')
+    pabs_collection.update_xaxes(title_text= 'psi');
     return (pabs_collection,)
 
 
@@ -281,7 +281,7 @@ def _(layout_style, log_checkbox, pd, px, race, task_checkboxs, title):
         if log_checkbox.value:
             plot.update_yaxes(type="log")
         plot.update_yaxes(title_text= name)
-        plot.update_xaxes(title_text= race.params['series']['var'])
+        plot.update_xaxes(title_text= 'psi')
         return plot
     return (flux_plot,)
 
