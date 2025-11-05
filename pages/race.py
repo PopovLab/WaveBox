@@ -119,7 +119,7 @@ class Race:
         image = task_path.joinpath('eflda_pabs.png')
         if not Path(image).exists():
             try:
-                fig = plot.make_eflda_pabs_fig(task_path, ['Nr', 'Mmax', 'nphi1'])
+                fig = plot.make_eflda_pabs_fig(task_path, ['Nr', 'Mmax', 'nphi1', 'freq'])
                 fig.savefig(image, dpi=300, bbox_inches='tight', transparent=False)
             except Exception as e:
                 print(f"Exception: {e}")

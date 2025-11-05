@@ -57,13 +57,29 @@ def make_eflda_pabs_fig(task_path: Path, show_vars: list):
     return fig
 
 def get_param_value(params, name):
-    if 'w2grid' in params:
-        if name in params['w2grid']:
-            return f"{name}={params['w2grid'][name]}"
-        else:
-            return f"There is no {name}"
+    value = find_key(params, name)
+    if value:
+        return value
     else:
-        return f"There is no w2grid"
+        return f"There is no {name}"
+
+
+def find_key(data, target_key):
+    """
+    Рекурсивно ищет ключ `target_key` в словаре `data` (включая вложенные разделы).
+    Возвращает значение ключа, если он найден, или None, если не найден.
+    """
+    if isinstance(data, dict):
+        # Если ключ есть в текущем уровне
+        if target_key in data:
+            return f"{target_key}={data[target_key]}"
+        # Ищем в значениях-словарях и списках
+        for key, value in data.items():
+            result = find_key(value, target_key)
+            if result is not None:
+                return result
+    else:
+        return None
     
 def get_title(params, vars_list= None):
     if 'work' in params:
@@ -84,9 +100,9 @@ def get_title(params, vars_list= None):
 
 
 if __name__ == "__main__":
-    #task_path= Path("D:\\PopovLab\\Program_wave2D\\Results\\T-15\\2025-09-26_12-54-03\\Nr_271")
-    task_path= Path("D:\\PopovLab\\Program_wave2D\\Results\\FT-2_LH_freq\\2025-11-01_22-59-08\\freq_0.90000")
+    task_path= Path("D:\\PopovLab\\Program_wave2D\\Results\\T-15\\2025-09-26_12-54-03\\Nr_271")
+    #task_path= Path("D:\\PopovLab\\Program_wave2D\\Results\\FT-2_LH_freq\\2025-11-01_22-59-08\\freq_0.90000")
     params = f90nml.read(task_path.joinpath('input.nml'))
     print(params)
     print(params['w2grid'])
-    print(get_title(params,  ['Nr', 'mmax', 'nphi1']))
+    print(get_title(params,  ['Nr', 'mmax', 'nphi1', 'freq']))
