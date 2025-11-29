@@ -124,3 +124,21 @@ class Race:
             except Exception as e:
                 print(f"Exception: {e}")
         return image
+
+    def _read_power_balance(self, path):
+        power_balance = self.result_path.joinpath(path).joinpath('power_balance.dat')
+        pb = {}
+        if power_balance.exists():
+            with power_balance.open("r") as file:
+                content = [line.strip().split() for line in file.readlines()]
+                for line in content:
+                    pb[line[0]] = float(line[2])
+        else:
+            pb = {'Pabs(kW)': None, 'Pinp(kW)': None, 'Discrepancy': None}
+        return pb
+    
+    def read_power_balance(self):
+        for task in self.tasks_collection:
+            pb = self._read_power_balance(task['task_name'])
+            task.update(pb)
+            #print(pb)

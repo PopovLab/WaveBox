@@ -134,22 +134,8 @@ def _(get_hstate, mo, race):
 @app.cell
 def _(race):
     #mo.stop(get_hstate() == 'attention', mo.md("**Submit the form to continue.**"))
-    for task in race.tasks_collection:
-        pb = read_power_balance(race.result_path.joinpath(task['task_name']))
-        task.update(pb)
-        #print(pb)
+    race.read_power_balance()
     return
-
-
-@app.function
-def read_power_balance(path):
-    pb = {}
-    if path.joinpath('power_balance.dat').exists():
-        with path.joinpath('power_balance.dat').open("r") as file:
-            content = [line.strip().split() for line in file.readlines()]
-            for line in content:
-                pb[line[0]] = float(line[2])
-    return pb
 
 
 @app.cell
