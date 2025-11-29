@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.17.0"
+__generated_with = "0.18.1"
 app = marimo.App(width="medium")
 
 
@@ -31,12 +31,10 @@ def _(cfg, mo):
 
 @app.cell
 def _(folder_browser, mo):
-    mo.md(
-        f"""
+    mo.md(f"""
     /// admonition | Folder : {folder_browser.path(index=0)} 
     ///
-    """
-    )
+    """)
     return
 
 
@@ -118,16 +116,14 @@ def _(race_table, set_hstate):
 
 @app.cell
 def _(get_hstate, mo, race):
-    mo.md(
-        f"""
+    mo.md(f"""
     /// {get_hstate()} | Race: {race.name} {race.title}
     Description: {race.description} <br>
     Tasks: {race.info_text}  <br>
     {race.sys_info} <br>
     Execution time: {race.exe_time}
     ///
-    """
-    )
+    """)
     return
 
 
